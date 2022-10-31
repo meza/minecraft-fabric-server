@@ -58,6 +58,12 @@ The minimum amount of memory the server can use for the young generation. This i
 
 The maximum number of threads the server can use. This is a Java argument.
 
+### AUTO_UPDATE
+
+If set to `true`, the server will automatically update the mods when booting up.
+
+Requires the [Minecraft Mod Manager](https://github.com/meza/minecraft-mod-manager)'s `modlist.json` to be present in the `/minecraft/config/server` directory.
+
 ## Volumes
 
 The image defines the following volumes:

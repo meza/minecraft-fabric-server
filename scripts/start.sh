@@ -17,7 +17,7 @@ mkdir -p $CONFIGS/server/
 # ---------------------------------- Copy config files to the volume ---------------------------------------------------
 
 echo "**** Setting up the main minecraft files ****"
-rsync -zav --include="*.json" --exclude="/fabric-server-launcher.properties" --include="*.properties" --exclude="*" $SERVER/ $CONFIGS/server/
+rsync -zav --include="*.json" --include="*.lock" --exclude="/fabric-server-launcher.properties" --include="*.properties" --exclude="*" $SERVER/ $CONFIGS/server/
 
 # ----------------------------------------------------------------------------------------------------------------------
 # ---------------------------------- Replacing files from the volume ---------------------------------------------------
@@ -33,6 +33,19 @@ cp -rsf $CONFIGS/datapacks/* $WORLD/datapacks/
 # ----------------------------------------------------------------------------------------------------------------------
 
 sed -i "s/NAME_REPLACE/${NAME}/g" /etc/rsnapshot.conf
+
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------- AUTO UPDATE ----------------------------------------------------------------
+
+if [ "$AUTO_UPDATE" = true ] ; then
+  echo "**** Auto Updating ****"
+  if [ -f $CONFIGS/modlist.json ]; then
+    cd $SERVER || exit 1
+    ./mmm install && ./mmm update
+  else
+    echo "**** no modlist.json exists, auto update can't happen ****"
+  fi
+fi
 
 # ----------------------------------------------------------------------------------------------------------------------
 
