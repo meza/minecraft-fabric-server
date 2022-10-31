@@ -15,7 +15,7 @@
         "dockerImage": "minecraft-fabric",
         "dockerFile": "Dockerfile",
         "dockerArgs": {
-          "API_TOKEN": true
+          "MINECRAFT_VERSION": "{{MCVERSION}}"
         }
       }
     ]

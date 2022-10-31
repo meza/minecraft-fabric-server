@@ -14,6 +14,7 @@ jobs:
       - uses: codfish/semantic-release-action@v2
         id: semantic
         with:
+          additional_packages: "@codedependant/semantic-release-docker@latest"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dry_run: false
           plugins: |
