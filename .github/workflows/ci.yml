@@ -32,7 +32,6 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}-latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}
-            - name: Build and push
       - name: Build and push semantic versions
         uses: docker/build-push-action@v3
         if: steps.semantic.outputs.new-release-published
