@@ -1,0 +1,22 @@
+{
+  "branches": [
+    "main"
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@codedependant/semantic-release-docker",
+      {
+        "dockerTags": [
+          "{{MCVERSION}}",
+          "{{MCVERSION}}-latest"
+        ],
+        "dockerImage": "minecraft-fabric",
+        "dockerFile": "Dockerfile",
+        "dockerArgs": {
+          "API_TOKEN": true
+        }
+      }
+    ]
+]}
