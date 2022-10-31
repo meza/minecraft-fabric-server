@@ -11,6 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: sed -i "s/{{MCVERSION}}/${{ matrix.version }}/g" .releaserc.json
+      - run: cat .releaserc.json
       - uses: codfish/semantic-release-action@v2
         id: semantic
         with:
@@ -20,6 +21,5 @@ jobs:
           plugins: |
             ['@semantic-release/commit-analyzer', '@semantic-release/release-notes-generator', '@semantic-release/github', '@codedependant/semantic-release-docker']
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
