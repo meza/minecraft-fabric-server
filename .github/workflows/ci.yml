@@ -18,8 +18,7 @@ jobs:
           additional_packages: "@codedependant/semantic-release-docker@latest"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dry_run: false
-          plugins: |
-            ['@semantic-release/commit-analyzer', '@semantic-release/release-notes-generator', '@semantic-release/github', '@codedependant/semantic-release-docker']
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
