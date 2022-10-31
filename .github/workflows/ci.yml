@@ -2,6 +2,9 @@ name: Build and Deploy
 
 on: [ push ]
 
+env:
+  IMAGE_NAME: minecraft-fabric-server
+
 jobs:
   build:
     strategy:
@@ -10,15 +13,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: sed -i "s/{{MCVERSION}}/${{ matrix.version }}/g" .releaserc.json
-      - run: cat .releaserc.json
       - uses: codfish/semantic-release-action@v2
         id: semantic
         with:
-          additional_packages: "@codedependant/semantic-release-docker@latest"
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          dry_run: false
+          dry_run: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCKER_REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to Docker Hub
+        if: steps.semantic.outputs.new-release-published
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        if: steps.semantic.outputs.new-release-published
+        with:
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}-${{ steps.semantic.outputs.release-version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}-${{ steps.semantic.outputs.release-version }}-latest

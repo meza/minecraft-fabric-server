@@ -4,20 +4,6 @@
     "next"
   ],
   "plugins": [
-    "@semantic-release/commit-analyzer",
-    "@semantic-release/release-notes-generator",
-    [
-      "@codedependant/semantic-release-docker",
-      {
-        "dockerTags": [
-          "{{MCVERSION}}",
-          "{{MCVERSION}}-latest"
-        ],
-        "dockerImage": "minecraft-fabric",
-        "dockerFile": "Dockerfile",
-        "dockerArgs": {
-          "MINECRAFT_VERSION": "{{MCVERSION}}"
-        }
-      }
-    ]
-]}
+    "@semantic-release/commit-analyzer"
+  ]
+}
