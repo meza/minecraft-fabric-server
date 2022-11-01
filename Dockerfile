@@ -1,12 +1,14 @@
 # syntax=docker/dockerfile-upstream:master-labs
 FROM openjdk:17-alpine as base
-RUN apk add mc bash curl rsync rsnapshot libstdc++
+
+RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories && \
+    apk add mc bash curl rsync rsnapshot libstdc++ shadow
 
 COPY --link etc/ /etc
 
-# RUN addgroup -S minecraft && adduser -S minecraft -G minecraft && \
-#    mkdir -p /minecraft && \
-#    chown -R minecraft:minecraft /minecraft
+RUN addgroup -g 1000 -S minecraft && adduser -D -u 1000 minecraft -G minecraft && \
+    mkdir -p /minecraft && \
+    chown -R minecraft:minecraft /minecraft
 
 FROM base as mcrcon
 WORKDIR /
@@ -129,4 +131,7 @@ VOLUME /minecraft/backups
 STOPSIGNAL SIGUSR1
 
 WORKDIR /minecraft/server
+
+RUN chown -R minecraft:minecraft /minecraft
+
 CMD ["start.sh"]

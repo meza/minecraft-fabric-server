@@ -5,6 +5,30 @@ CONFIGS=$MCDIR/config
 BACKUPS=$MCDIR/backups
 WORLD=$MCDIR/world
 SERVER=$MCDIR/server
+JAVA_BIN=/opt/openjdk-17/bin/java
+
+USER_ID=${LOCAL_UID:-1000}
+GROUP_ID=${LOCAL_GID:-1000}
+
+# -------------------------------------------------- ROOT ACCESS -------------------------------------------------------
+if [ -z "$1" ]; then
+
+  usermod -u "$USER_ID" minecraft
+  groupmod -g "$GROUP_ID" minecraft
+
+  chown -R minecraft:minecraft "$MCDIR"
+
+  sed -i "s/NAME_REPLACE/${NAME}/g" /etc/rsnapshot.conf
+
+  echo "**** Starting Crond ****"
+  crond
+  user=minecraft
+  exec su "$user" "$0" -- "stop"
+fi
+# ----------------------------------------------------------------------------------------------------------------------
+
+# ------------------------------------------- RESTRICTED USER STUFF BELOW ----------------------------------------------
+
 
 echo "**** Resetting the environment ****"
 rm -rf $SERVER/screenlog.0
@@ -30,11 +54,6 @@ cp -rsf $CONFIGS/server/* $SERVER/
 echo "**** Copying Datapacks ****"
 cp -rsf $CONFIGS/datapacks/* $WORLD/datapacks/
 
-# ----------------------------------------------------------------------------------------------------------------------
-
-sed -i "s/NAME_REPLACE/${NAME}/g" /etc/rsnapshot.conf
-
-# ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------- AUTO UPDATE ----------------------------------------------------------------
 
 if [ "$AUTO_UPDATE" = true ] ; then
@@ -66,14 +85,11 @@ stop_mc() {
 
 trap stop_mc SIGUSR1 SIGTERM
 
-echo "**** Starting Crond ****"
-crond
-
 echo "**** Starting Minecraft ****"
 cd $SERVER || exit 1
 screen -wipe
 
-screen -L -Logfile "$SERVER/screenlog.0" -dmS minecraft java -Xms${XMS} -Xmx${XMX} -XX:+AlwaysPreTouch \
+screen -L -Logfile "$SERVER/screenlog.0" -dmS minecraft "$JAVA_BIN" -Xms${XMS} -Xmx${XMX} -XX:+AlwaysPreTouch \
 -XX:+ParallelRefProcEnabled -XX:+DisableExplicitGC -XX:+UseG1GC -Dsun.rmi.dgc.server.gcInterval=2147483646 \
 -XX:TargetSurvivorRatio=90 -XX:ParallelGCThreads=${MAX_THREADS} -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions \
 -XX:G1NewSizePercent=30 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=25 -XX:G1HeapRegionSize=8M -XX:G1HeapWastePercent=5 \
@@ -95,7 +111,7 @@ MC_PID=$(screen -S minecraft -Q echo '$PID')
 echo "    Minecraft's pid is ${MC_PID}"
 tail -f $SERVER/screenlog.0 &
 echo .
-echo "**** Waiting for Minecraft to stop ****"
+echo "**** Minecraft logs incoming ... ****"
 while [ -e "/proc/$MC_PID" ]
 do
   sleep .6
