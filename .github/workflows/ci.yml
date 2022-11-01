@@ -47,7 +47,7 @@ jobs:
         if: steps.semantic.outputs.new-release-published
         uses: mathieudutour/github-tag-action@v6.1
         with:
-          custom_tag: v${{ steps.semantic.outputs.release-version }}
+          custom_tag: ${{ steps.semantic.outputs.release-version }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   description:
