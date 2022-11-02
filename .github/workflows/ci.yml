@@ -23,6 +23,7 @@ jobs:
     outputs:
       new-release: ${{ steps.semantic.outputs.new-release-published }}
       new-version: ${{ steps.semantic.outputs.release-version }}
+
   build:
     needs: analyze
     strategy:
@@ -50,16 +51,16 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}-dev
       - name: Build and push semantic versions
         uses: docker/build-push-action@v3
-        if: steps.semantic.outputs.new-release-published
+        if: needs.analyze.outputs.new-release
         with:
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}-${{ steps.semantic.outputs.release-version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}-${{ needs.analyze.outputs.new-version }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}-latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}
 
   description:
-    needs: build
+    needs: [ analyze, build ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -76,5 +77,5 @@ jobs:
         if: needs.build.outputs.new-release
         uses: mathieudutour/github-tag-action@v6.1
         with:
-          custom_tag: ${{ needs.build.outputs.new-version }}
+          custom_tag: ${{ needs.analyze.outputs.new-version }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
