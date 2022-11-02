@@ -105,6 +105,12 @@ setConfig() {
 
 export -f setConfig
 
+setConfig "server-port" "${MINECRAFT_PORT}"
+setConfig "query.port" "${QUERY_PORT}"
+setConfig "rcon.port" "${RCON_PORT}"
+setConfig "rcon.password" "${RCON_PASSWORD}"
+setConfig "enable-rcon" "true"
+
 if [ -f "$CONFIGS/scripts/configure.sh" ]; then
   echo "**** Running configure.sh ****"
   chmod +x "$CONFIGS/scripts/configure.sh"
