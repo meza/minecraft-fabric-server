@@ -10,8 +10,6 @@ export JAVA_BIN=/opt/openjdk-17/bin/java
 export USER_ID=${LOCAL_UID:-1000}
 export GROUP_ID=${LOCAL_GID:-1000}
 
-export LOFASZ=joska
-
 if [ -z "$DATE" ]; then
   DATE=$(date +%Y-%m-%d_%H-%M-%S)
 fi
@@ -100,8 +98,9 @@ done
 # -------------------------------------- Adjusting Configuration -------------------------------------------------------
 
 setConfig() {
-  echo sed -i "s/$1=.*/$1=$2/g" "$SERVER/server.properties"
-  sed -i "s/$1=.*/$1=$2/g" "$SERVER/server.properties"
+  SC_FILE=${3:-"$SERVER/server.properties"}
+  echo sed -i "s/$1=.*/$1=$2/g" "$SC_FILE"
+  sed -i "s/$1=.*/$1=$2/g" "$SC_FILE"
 }
 
 export -f setConfig
