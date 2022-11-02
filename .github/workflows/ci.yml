@@ -9,14 +9,25 @@ env:
   IMAGE_NAME: minecraft-fabric-server
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        version: [ 1.16.5, 1.17.1, 1.18.2, 1.19.2 ]
+  analyze:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: codfish/semantic-release-action@v2
+        id: semantic
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dry_run: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
       new-release: ${{ steps.semantic.outputs.new-release-published }}
       new-version: ${{ steps.semantic.outputs.release-version }}
+  build:
+    needs: analyze
+    strategy:
+      matrix:
+        version: [ 1.16.5, 1.17.1, 1.18.2, 1.19.2 ]
     steps:
       - uses: actions/checkout@v3
       - uses: codfish/semantic-release-action@v2
