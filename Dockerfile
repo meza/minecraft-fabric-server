@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile-upstream:master-labs
-FROM openjdk:17-alpine as base
+FROM eclipse-temurin:17-alpine as base
 
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories && \
-    apk add mc bash curl rsync shadow coreutils
+    apk add mc bash curl rsync shadow coreutils gcompat libstdc++
 
 COPY --link etc/ /etc
 
@@ -83,7 +83,7 @@ RUN apk add jq && \
     mkdir -p /minecraft/server && \
     curl -s https://api.github.com/repos/meza/minecraft-mod-manager/releases | \
     jq -r '.[0].assets[] | select(.label | contains("Linux")) | .browser_download_url' | \
-    xargs curl -s -L -o /tmp/mmm.zip && \
+    xargs wget -O /tmp/mmm.zip && \
     unzip /tmp/mmm.zip -d /minecraft/server
 
 FROM base as backup
