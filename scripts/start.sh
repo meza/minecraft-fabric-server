@@ -119,15 +119,21 @@ fi
 
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------- AUTO UPDATE ----------------------------------------------------------------
-
-if [ "$AUTO_UPDATE" = true ]; then
-  echo "**** Auto Updating ****"
-  if [ -f $SERVER/modlist.json ]; then
+if [ -f $SERVER/modlist.json ]; then
+  echo "**** Installing mods ****"
+  (
     cd $SERVER || exit 1
-    ./mmm install && ./mmm update
-  else
-    echo "**** no modlist.json exists, auto update can't happen ****"
+    ./mmm install
+  )
+  if [ "$AUTO_UPDATE" = true ]; then
+    echo "**** Auto Updating ****"
+    (
+      cd $SERVER || exit 1
+      ./mmm update
+    )
   fi
+else
+  echo "**** no modlist.json exists, auto update can't happen ****"
 fi
 
 # ----------------------------------------------------------------------------------------------------------------------
