@@ -1,1 +1,3 @@
-docker build --cache-from mctest -t mctest --target run .
+#!/bin/bash
+
+docker build -t mctest --target run .

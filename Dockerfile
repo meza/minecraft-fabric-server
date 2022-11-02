@@ -2,11 +2,11 @@
 FROM openjdk:17-alpine as base
 
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories && \
-    apk add mc bash curl rsync rsnapshot libstdc++ shadow
+    apk add mc bash curl rsync shadow coreutils
 
 COPY --link etc/ /etc
 
-RUN addgroup -g 1000 -S minecraft && adduser -D -u 1000 minecraft -G minecraft && \
+RUN addgroup -g 1000 -S minecraft && adduser -D -u 1000 minecraft -G minecraft -s /bin/bash && \
     mkdir -p /minecraft && \
     chown -R minecraft:minecraft /minecraft
 
@@ -88,12 +88,12 @@ RUN apk add jq && \
 
 FROM base as backup
 
-RUN apk add rsync rsnapshot libstdc++
+RUN apk add rsync duplicity duply
 
-COPY --link etc/ /etc
+COPY --link etc/duply/ /home/minecraft/.duply
 
-RUN (crontab -l ; echo "0 * * * * /usr/bin/rsnapshot hourly") | sort - | uniq - | crontab - && \
-    (crontab -l ; echo "30 23 * * * /usr/bin/rsnapshot daily") | sort - | uniq - | crontab -
+RUN (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft backup --allow-source-mismatch now") | sort - | uniq - | crontab - && \
+    (crontab -l ; echo "30 23 * * * /usr/bin/duply minecraft full now --allow-source-mismatch") | sort - | uniq - | crontab -
 
 FROM backup as run
 
@@ -120,6 +120,8 @@ ENV XMN=512m
 ENV MAX_THREADS=8
 ENV AUTO_UPDATE=false
 
+ENV WHITELIST=true
+
 EXPOSE ${MINECRAFT_PORT}
 EXPOSE ${RCON_PORT}
 EXPOSE ${QUERY_PORT}
@@ -127,11 +129,15 @@ EXPOSE ${QUERY_PORT}
 VOLUME /minecraft/config
 VOLUME /minecraft/world
 VOLUME /minecraft/backups
+VOLUME /minecraft/server
 
 STOPSIGNAL SIGUSR1
 
 WORKDIR /minecraft/server
 
 RUN chown -R minecraft:minecraft /minecraft
+
+HEALTHCHECK --interval=5m --timeout=2s \
+  CMD nc -zvw5 localhost $QUERY_PORT
 
 CMD ["start.sh"]

@@ -1,0 +1,5 @@
+GPG_KEY='disabled'
+TARGET='file:///minecraft/backups'
+SOURCE=/minecraft/server/
+MAX_AGE=7D
+MAX_FULL_BACKUPS=5

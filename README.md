@@ -4,6 +4,11 @@ Sourcecode: https://github.com/meza/minecraft-fabric-server
 
 > This is not meant to be used as a standalone image, and it's heavily under development.
 
+
+TBD:
+
+- configure.sh
+
 ## Build Arguments
 
 ### MINECRAFT VERSION

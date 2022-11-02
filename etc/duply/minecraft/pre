@@ -1,0 +1,2 @@
+screen -S minecraft -p 0 -X stuff "save-all^M" || exit 0
+screen -S minecraft -p 0 -X stuff "save-off^M" || exit 0
