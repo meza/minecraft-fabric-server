@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       new-release: ${{ steps.semantic.outputs.new-release-published }}
-      new-version: ${{ ${{ steps.semantic.outputs.release-version }} }}
+      new-version: ${{ steps.semantic.outputs.release-version }}
     steps:
       - uses: actions/checkout@v3
       - uses: codfish/semantic-release-action@v2
