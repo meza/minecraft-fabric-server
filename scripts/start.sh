@@ -99,7 +99,6 @@ done
 
 setConfig() {
   SC_FILE=${3:-"$SERVER/server.properties"}
-  echo sed -i "s/$1=.*/$1=$2/g" "$SC_FILE"
   sed -i "s/$1=.*/$1=$2/g" "$SC_FILE"
 }
 
@@ -123,7 +122,7 @@ fi
 
 if [ "$AUTO_UPDATE" = true ]; then
   echo "**** Auto Updating ****"
-  if [ -f $CONFIGS/modlist.json ]; then
+  if [ -f $SERVER/modlist.json ]; then
     cd $SERVER || exit 1
     ./mmm install && ./mmm update
   else
