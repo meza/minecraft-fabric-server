@@ -14,6 +14,9 @@ jobs:
       matrix:
         version: [ 1.16.5, 1.17.1, 1.18.2, 1.19.2 ]
     runs-on: ubuntu-latest
+    outputs:
+      new-release: ${{ steps.semantic.outputs.new-release-published }}
+      new-version: ${{ ${{ steps.semantic.outputs.release-version }} }}
     steps:
       - uses: actions/checkout@v3
       - uses: codfish/semantic-release-action@v2
@@ -43,15 +46,9 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}-${{ steps.semantic.outputs.release-version }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}-latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}
-      - name: Bump version and push tag
-        id: tag_version
-        if: steps.semantic.outputs.new-release-published
-        uses: mathieudutour/github-tag-action@v6.1
-        with:
-          custom_tag: ${{ steps.semantic.outputs.release-version }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   description:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -63,3 +60,10 @@ jobs:
           repository: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
           readme-filepath: README.md
           short-description: ${{ github.event.repository.description }}
+      - name: Bump version and push tag
+        id: tag_version
+        if: needs.build.outputs.new-release
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          custom_tag: ${{ needs.build.outputs.new-version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
