@@ -95,7 +95,7 @@ COPY --link etc/duply/ /home/minecraft/.duply
 RUN (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft backup --allow-source-mismatch now") | sort - | uniq - | crontab - && \
     (crontab -l ; echo "30 23 * * * /usr/bin/duply minecraft full now --allow-source-mismatch") | sort - | uniq - | crontab -
 
-FROM backup as run
+FROM backup as prepare
 
 RUN apk add screen
 
@@ -104,8 +104,15 @@ COPY --from=fabric /minecraft/server /minecraft/server
 COPY --from=mmm /minecraft/server/mmm /minecraft/server/mmm
 COPY --from=mcrcon /mcrcon/mcrcon /minecraft/tools/mcrcon
 
-COPY scripts/start.sh /minecraft/server/start.sh
-RUN chmod +x /minecraft/server/start.sh
+
+RUN mv -u /minecraft/server /minecraft/server-init && \
+    mkdir -p /minecraft/server
+
+COPY scripts/start.sh /minecraft/start.sh
+
+RUN chown -R minecraft:minecraft /minecraft
+
+FROM prepare as run
 
 ARG RCON_PASSWORD="minecraft"
 ARG RCON_PORT=25575
@@ -138,9 +145,7 @@ STOPSIGNAL SIGUSR1
 
 WORKDIR /minecraft/server
 
-RUN chown -R minecraft:minecraft /minecraft
-
 HEALTHCHECK --interval=5m --timeout=2s \
   CMD nc -zvw5 localhost $QUERY_PORT
 
-CMD ["start.sh"]
+CMD ["/minecraft/start.sh"]

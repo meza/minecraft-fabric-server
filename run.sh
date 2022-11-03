@@ -10,6 +10,7 @@ if [ -z "$1" ]; then
     -v"$(pwd)/tmp/backups:/minecraft/backups" \
     -v"$(pwd)/tmp/world:/minecraft/world" \
     -v"$(pwd)/tmp/config:/minecraft/config" \
+    -v"$(pwd)/tmp/server:/minecraft/server" \
     mctest
 else
   docker run --rm -it \
@@ -21,5 +22,6 @@ else
     -v"$(pwd)/tmp/backups:/minecraft/backups" \
     -v"$(pwd)/tmp/world:/minecraft/world" \
     -v"$(pwd)/tmp/config:/minecraft/config" \
+    -v"$(pwd)/tmp/server:/minecraft/server" \
     mctest "$1"
 fi

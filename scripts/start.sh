@@ -73,6 +73,8 @@ ln -sf $WORLD $SERVER/world
 
 echo "**** Setting up the main minecraft files ****"
 
+rsync -a -r -h --del /minecraft/server-init/ /minecraft/server
+
 excludes=(fabric-server-launcher.properties)
 
 # shellcheck disable=SC2086
@@ -91,7 +93,7 @@ hydrate_config "lock" $excludes
 # ---------------------------------- Replacing files from the volume ---------------------------------------------------
 
 for HC_FILE in "$CONFIGS"/server/*; do
-  ln -sf "$HC_FILE" $SERVER/"$(basename "$HC_FILE")"
+  ln -sfr "$HC_FILE" $SERVER/"$(basename "$HC_FILE")"
 done
 
 # ----------------------------------------------------------------------------------------------------------------------
