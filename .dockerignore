@@ -1,4 +1,7 @@
-.idea
+.idea/
+.github/
+.git/
 build.sh
 run.sh
-tmp
+tmp/
+

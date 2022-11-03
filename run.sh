@@ -5,9 +5,10 @@ if [ -z "$1" ]; then
     --name "mct" \
     -e LOCAL_UID="$(id -u "$USER")" \
     -e LOCAL_GID="$(id -g "$USER")" \
-    -e WHITELIST=true \
+    -e RCON_PASSWORD="test" \
+    -e BACKUP_PATH="file:///minecraft/backups" \
+    --env-file .env \
     --hostname "mct" \
-    -v"$(pwd)/tmp/backups:/minecraft/backups" \
     -v"$(pwd)/tmp/world:/minecraft/world" \
     -v"$(pwd)/tmp/config:/minecraft/config" \
     -v"$(pwd)/tmp/server:/minecraft/server" \
@@ -15,11 +16,12 @@ if [ -z "$1" ]; then
 else
   docker run --rm -it \
     --name "mct" \
+    -e RCON_PASSWORD="test" \
     -e LOCAL_UID="$(id -u "$USER")" \
     -e LOCAL_GID="$(id -g "$USER")" \
-    -e WHITELIST=true \
     --hostname "mct" \
-    -v"$(pwd)/tmp/backups:/minecraft/backups" \
+    -e BACKUP_PATH="file:///minecraft/backups" \
+    --env-file .env \
     -v"$(pwd)/tmp/world:/minecraft/world" \
     -v"$(pwd)/tmp/config:/minecraft/config" \
     -v"$(pwd)/tmp/server:/minecraft/server" \
