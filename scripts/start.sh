@@ -5,7 +5,7 @@ export CONFIGS=$MCDIR/config
 export BACKUPS=$MCDIR/backups
 export WORLD=$MCDIR/world
 export SERVER=$MCDIR/server
-export JAVA_BIN=/opt/openjdk-17/bin/java
+export JAVA_BIN=/opt/java/openjdk/bin/java
 
 export USER_ID=${LOCAL_UID:-1000}
 export GROUP_ID=${LOCAL_GID:-1000}
