@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile-upstream:master-labs@sha256:ee2a1e5e7cb1effc2efedee71ff0511d2ca5d26ed1e2e644fb2a91a21143eeb9
-FROM eclipse-temurin:19-alpine@sha256:d8628fe80357fa9707e32f2232b918ee0af0a8c03ca582da0aa1df8374a06943 as base
+FROM eclipse-temurin:19-alpine@sha256:064299f2f91f79c21605d0132abc8f063f645be043e199f383a1a95d9eaf5b5f as base
 
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories && \
     apk add mc bash perl curl wget rsync shadow coreutils gcompat libstdc++ jq
