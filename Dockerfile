@@ -119,7 +119,8 @@ RUN pip3 install boto3==1.15.3
 
 COPY --link etc/duply/ /home/minecraft/.duply
 
-RUN (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft backup now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
+RUN (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft purgeAuto --force --allow-source-mismatch 2> /var/log/duply.err 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
+    (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft backup now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
     (crontab -l ; echo "30 23 * * * /usr/bin/duply minecraft full now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
     touch /var/log/duply.log && \
     touch /var/log/duply.error && \
