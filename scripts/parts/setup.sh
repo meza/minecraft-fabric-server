@@ -98,9 +98,9 @@ hydrate_config "txt" $excludes
 
 mkdir -p "$SETUP_FILES/server/config"
 
-if [ -d $SERVER/config ]; then
-  mv $SERVER/config/* "$SETUP_FILES/server/config"
-fi
+#if [ -d $SERVER/config ]; then
+#  mv $SERVER/config/* "$SETUP_FILES/server/config"
+#fi
 
 # ----------------------------------------------------------------------------------------------------------------------
 # ---------------------------------- Replacing files from the volume ---------------------------------------------------
