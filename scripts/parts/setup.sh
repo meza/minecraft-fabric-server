@@ -65,35 +65,35 @@ excludes=(fabric-server-launcher.properties)
 
 # shellcheck disable=SC2086
 # shellcheck disable=SC2128
-hydrate_config "json" $excludes
+#hydrate_config "json" $excludes
 
 # shellcheck disable=SC2086
 # shellcheck disable=SC2128
-hydrate_config "properties" $excludes
+#hydrate_config "properties" $excludes
 
 # shellcheck disable=SC2086
 # shellcheck disable=SC2128
-hydrate_config "lock" $excludes
+#hydrate_config "lock" $excludes
 
 # shellcheck disable=SC2086
 # shellcheck disable=SC2128
-hydrate_config "png" $excludes
+#hydrate_config "png" $excludes
 
 # shellcheck disable=SC2086
 # shellcheck disable=SC2128
-hydrate_config "conf" $excludes
+#hydrate_config "conf" $excludes
 
 # shellcheck disable=SC2086
 # shellcheck disable=SC2128
-hydrate_config "yml" $excludes
+#hydrate_config "yml" $excludes
 
 # shellcheck disable=SC2086
 # shellcheck disable=SC2128
-hydrate_config "db" $excludes
+#hydrate_config "db" $excludes
 
 # shellcheck disable=SC2086
 # shellcheck disable=SC2128
-hydrate_config "txt" $excludes
+#hydrate_config "txt" $excludes
 
 
 mkdir -p "$SETUP_FILES/server/config"
@@ -106,13 +106,18 @@ mkdir -p "$SETUP_FILES/server/config"
 # ---------------------------------- Replacing files from the volume ---------------------------------------------------
 
 for HC_FILE in "$SETUP_FILES"/server/*; do
+  # if target file or directory exists, skip
+  if [ -e "$SERVER/$(basename "$HC_FILE")" ]; then
+    continue
+  fi
+
   ln -sfr "$HC_FILE" "$SERVER/$(basename "$HC_FILE")"
 done
 
 ln -sfr "$SETUP_FILES/server/config" "$SERVER/config"
 
-if [ -d $SETUP_FILES/server/datapacks ]; then
-  ln -sfr "$SETUP_FILES/server/datapacks" "$WORLD/datapacks"
+if [ -d $SETUP_FILES/datapacks ]; then
+  ln -sfr "$SETUP_FILES/datapacks" "$WORLD/datapacks"
 fi
 
 # ----------------------------------------------------------------------------------------------------------------------
