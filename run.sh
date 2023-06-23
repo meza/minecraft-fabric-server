@@ -8,10 +8,11 @@ if [ -z "$1" ]; then
     -e RCON_PASSWORD="test" \
     -e BACKUP_PATH="file:///minecraft/backups" \
     --env-file .env \
-    --hostname "mct" \
     -v"$(pwd)/tmp/world:/minecraft/world" \
     -v"$(pwd)/tmp/config:/minecraft/config" \
     -v"$(pwd)/tmp/server:/minecraft/server" \
+    -p 25565:25565 \
+    -p 25575:25575 \
     mctest
 else
   docker run --rm -it \
@@ -19,11 +20,12 @@ else
     -e RCON_PASSWORD="test" \
     -e LOCAL_UID="$(id -u "$USER")" \
     -e LOCAL_GID="$(id -g "$USER")" \
-    --hostname "mct" \
     -e BACKUP_PATH="file:///minecraft/backups" \
     --env-file .env \
     -v"$(pwd)/tmp/world:/minecraft/world" \
     -v"$(pwd)/tmp/config:/minecraft/config" \
     -v"$(pwd)/tmp/server:/minecraft/server" \
+    -p 25565:25565 \
+    -p 25575:25575 \
     mctest "$1"
 fi

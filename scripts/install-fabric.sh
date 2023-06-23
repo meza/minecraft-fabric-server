@@ -3,12 +3,11 @@
 MINECRAFT_VERSION=$1
 MINECRAFT_DIR=$2
 MINECRAFT_JAR=$3
+INSTALLER_META_FILE=$4
+LOADER_META_FILE=$5
 
-INSTALLER_META_URL=https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml
-LATEST_INSTALLER_VERSION=$(curl -s "$INSTALLER_META_URL" | perl -0777 -ne 'print $1 if /<latest>(.*?)<\/latest>/s')
-
-LOADER_META_URL=https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml
-LATEST_LOADER_VERSION=$(curl -s "$LOADER_META_URL" | perl -0777 -ne 'print $1 if /<latest>(.*?)<\/latest>/s')
+LATEST_INSTALLER_VERSION=$(perl -0777 -ne 'print $1 if /<latest>(.*?)<\/latest>/s' "$INSTALLER_META_FILE")
+LATEST_LOADER_VERSION=$(perl -0777 -ne 'print $1 if /<latest>(.*?)<\/latest>/s' "$LOADER_META_FILE")
 
 LAUNCHER_URL="https://meta.fabricmc.net/v2/versions/loader/${MINECRAFT_VERSION}/${LATEST_LOADER_VERSION}/${LATEST_INSTALLER_VERSION}/server/jar"
 

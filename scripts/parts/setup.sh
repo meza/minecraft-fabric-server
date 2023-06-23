@@ -51,9 +51,9 @@ mkdir -p $CONFIGS/scripts/
 mkdir -p "$CONFIGS/logs/$DATE"
 mkdir -p $WORLD/datapacks
 
-ln -sfr "$CONFIGS/logs/$DATE" "$CONFIGS/logs/latest"
-ln -sf "$CONFIGS/logs/$DATE" $SERVER/logs
-ln -sf $WORLD $SERVER/world
+rm -rf "$CONFIGS/logs/latest" && ln -sfr "$CONFIGS/logs/$DATE" "$CONFIGS/logs/latest"
+rm -rf $SERVER/logs && ln -sf "$CONFIGS/logs/$DATE" $SERVER/logs
+rm -rf $SERVER/world && ln -sf $WORLD $SERVER/world
 
 # ---------------------------------- Copy config files to the volume ---------------------------------------------------
 
@@ -201,13 +201,13 @@ screen -L -Logfile "$SERVER/screenlog.0" -dmS minecraft "$JAVA_BIN" -Xms${XMS} -
   -XX:UseAVX=2 -XX:+UseStringDeduplication -XX:+UseFastUnorderedTimeStamps -XX:+UseAES -XX:+UseAESIntrinsics -XX:UseSSE=4 -XX:AllocatePrefetchStyle=2 \
   -XX:+UseLoopPredicate -XX:+RangeCheckElimination -XX:+EliminateLocks -XX:+DoEscapeAnalysis -XX:+UseCodeCacheFlushing -XX:+UseFastJNIAccessors \
   -XX:+OptimizeStringConcat -XX:+UseCompressedOops -XX:+UseThreadPriorities -XX:+OmitStackTraceInFastThrow -XX:+TrustFinalNonStaticFields \
-  -XX:ThreadPriorityPolicy=1 -XX:+UseInlineCaches -XX:+RewriteBytecodes -XX:+RewriteFrequentPairs -XX:+UseNUMA -XX:-DontCompileHugeMethods \
+  -XX:+UseInlineCaches -XX:+RewriteBytecodes -XX:+RewriteFrequentPairs -XX:+UseNUMA -XX:-DontCompileHugeMethods \
   -XX:+UseFPUForSpilling -XX:+UseNewLongLShift -XX:+UseVectorCmov -XX:+UseXMMForArrayCopy -XX:+UseXmmI2D -XX:+UseXmmI2F -XX:+UseXmmLoadAndClearUpper \
   -XX:+UseXmmRegToRegMoveAll -Dfile.encoding=UTF-8 -Djdk.nio.maxCachedBufferSize=262144 -Dgraal.TuneInlinerExploration=1 -Dgraal.CompilerConfiguration=enterprise \
   -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true -Dgraal.DetectInvertedLoopsAsCounted=true -Dgraal.LoopInversion=true \
   -Dgraal.VectorizeHashes=true -Dgraal.EnterprisePartialUnroll=true -Dgraal.VectorizeSIMD=true -Dgraal.StripMineNonCountedLoops=true -Dgraal.SpeculativeGuardMovement=true \
-  -Dgraal.InfeasiblePathCorrelation=true --add-modules jdk.incubator.vector \
-  -cp "fabric-server-launch.jar:lib/*:." net.fabricmc.loader.launch.server.FabricServerLauncher \
+  -Dgraal.InfeasiblePathCorrelation=true \
+  -jar "${SERVER}/fabric-server-launch.jar" \
   nogui
 
 MC_PID=$(screen -S minecraft -Q echo '$PID')

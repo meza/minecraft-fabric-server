@@ -1,14 +1,25 @@
 # syntax=docker/dockerfile-upstream:master-labs@sha256:ee2a1e5e7cb1effc2efedee71ff0511d2ca5d26ed1e2e644fb2a91a21143eeb9
-FROM eclipse-temurin:19-alpine@sha256:7949b5f4df3934290c60e5ebab01667a82c9d5c2e064c8d20120e54a56e9d6cb as base
+# @sha256:7949b5f4df3934290c60e5ebab01667a82c9d5c2e064c8d20120e54a56e9d6cb
+FROM eclipse-temurin:20-alpine as base
 
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories && \
+    apk update && \
     apk add mc bash perl curl wget rsync shadow coreutils gcompat libstdc++ jq
+
+ENV PYTHONUNBUFFERED=1
+
+RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python && \
+    python3 -m ensurepip && \
+    apk add py3-setuptools && \
+    pip3 install --no-cache --upgrade pip setuptools
 
 COPY --link etc/ /etc
 
 RUN addgroup -g 1000 -S minecraft && adduser -D -u 1000 minecraft -G minecraft -s /bin/bash && \
     mkdir -p /minecraft && \
     chown -R minecraft:minecraft /minecraft
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 FROM base as minecraft
 # Everything that is in preparation for the actual minecraft server
@@ -29,7 +40,10 @@ RUN mkdir -p /minecraft/config \
     && mkdir -p /minecraft/tools \
     && echo ${MINECRAFT_VERSION} > /minecraft/version.txt
 
-RUN curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.latest.release' > /minecraft/latest-version.txt && \
+# Cache Busting - if necessary
+ADD "https://launchermeta.mojang.com/mc/game/version_manifest.json" /minecraft/version_manifest.json
+
+RUN cat /minecraft/version_manifest.json | jq -r '.latest.release' > /minecraft/latest-version.txt && \
     LATEST_VERSION=$(cat "/minecraft/latest-version.txt"); \
     curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | \
     jq --arg VERSION "${MINECRAFT_VERSION:-$LATEST_VERSION}" -r '.versions[] | select(.id == $VERSION) | .url' | \
@@ -45,11 +59,13 @@ RUN java -Xmx1024M -Xms512M -jar /minecraft/server/minecraft_server.jar nogui &&
 
 RUN sed -i 's/enable-jmx-monitoring=false/enable-jmx-monitoring=true/g' /minecraft/server/server.properties && \
     sed -i "s/rcon.port=25575/rcon.port=$RCON_PORT/" /minecraft/server/server.properties && \
-    sed -i "s/rcon.password=/rcon.password=${RCON_PASSWORD:-$RANDOM}/g" /minecraft/server/server.properties && \
+    sed -i "s/rcon.password=/rcon.password=$RCON_PASSWORD/g" /minecraft/server/server.properties && \
     sed -i "s/query.port=25565/query.port=$QUERY_PORT/g" /minecraft/server/server.properties && \
     sed -i "s/server.port=25565/server.port=$MINECRAFT_PORT/g" /minecraft/server/server.properties && \
     sed -i 's/enable-rcon=false/enable-rcon=true/g' /minecraft/server/server.properties && \
     echo "eula=true" > /minecraft/server/eula.txt
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 FROM base as fabric
 
@@ -61,9 +77,15 @@ COPY --from=minecraft /minecraft/latest-version.txt /minecraft/latest-version.tx
 
 WORKDIR /tmp/fabric
 
+# Cache Busting - if necessary
+ADD "https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml" /tmp/fabric/installer-metadata.xml
+ADD "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml" /tmp/fabric/loader-metadata.xml
+
 COPY --link scripts/install-fabric.sh /minecraft/tools/install-fabric.sh
 
-RUN LATEST_VERSION=$(cat "/minecraft/latest-version.txt"); /minecraft/tools/install-fabric.sh "${MINECRAFT_VERSION:-$LATEST_VERSION}" "/minecraft/server" "minecraft_server.jar"
+RUN LATEST_VERSION=$(cat "/minecraft/latest-version.txt"); /minecraft/tools/install-fabric.sh "${MINECRAFT_VERSION:-$LATEST_VERSION}" "/minecraft/server" "minecraft_server.jar" "/tmp/fabric/installer-metadata.xml" "/tmp/fabric/loader-metadata.xml"
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 FROM base as mmm
 
@@ -87,11 +109,12 @@ RUN ls -lah .
 
 RUN gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o mcrcon mcrcon.c
 
+# ----------------------------------------------------------------------------------------------------------------------
+
 FROM base as backup
 
-RUN apk add rsync duplicity duply py3-pip && \
-    pip install --upgrade pip && \
-    pip install --upgrade boto3
+RUN apk add rsync duplicity duply
+RUN pip3 install boto3==1.15.3
 
 COPY --link etc/duply/ /home/minecraft/.duply
 
@@ -100,6 +123,8 @@ RUN (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft backup now --allow-so
     touch /var/log/duply.log && \
     touch /var/log/duply.error && \
     chmod a+rw /var/log/duply*
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 FROM backup as prepare
 
@@ -128,6 +153,8 @@ COPY scripts/start.sh /minecraft/start.sh
 RUN chown -R minecraft:minecraft /minecraft && \
     chmod +x /minecraft/start.sh && \
     chmod +x /minecraft/scripts/**/*.sh
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 FROM prepare as run
 
