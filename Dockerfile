@@ -186,7 +186,7 @@ EXPOSE ${MINECRAFT_PORT}
 EXPOSE ${RCON_PORT}
 EXPOSE ${QUERY_PORT}
 
-VOLUME /minecraft/config
+VOLUME /minecraft/setup-files
 VOLUME /minecraft/world
 VOLUME /minecraft/backups
 VOLUME /minecraft/server

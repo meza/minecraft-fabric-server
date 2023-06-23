@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export MCDIR=/minecraft
-export CONFIGS=$MCDIR/config
+export SETUP_FILES=$MCDIR/setup-files
 export BACKUPS=$MCDIR/backups
 export WORLD=$MCDIR/world
 export SERVER=$MCDIR/server
@@ -28,7 +28,7 @@ hydrate_config() {
     fi
 
     HC_BASE=$(basename "$HC_FILE")
-    HC_NAME="$CONFIGS/server/$HC_BASE"
+    HC_NAME="$SETUP_FILES/server/$HC_BASE"
 
     echo "Checking ${HC_BASE}"
     [[ ${EXCLUDES[*]} =~ ${HC_BASE} ]] && echo "excluding $HC_BASE" && continue
@@ -46,13 +46,13 @@ echo "**** Resetting the environment ****"
 rm -rf $SERVER/screenlog.0
 rm -rf $SERVER/logs
 
-mkdir -p $CONFIGS/server/
-mkdir -p $CONFIGS/scripts/
-mkdir -p "$CONFIGS/logs/$DATE"
+mkdir -p $SETUP_FILES/server/
+mkdir -p $SETUP_FILES/scripts/
+mkdir -p "$SETUP_FILES/logs/$DATE"
 mkdir -p $WORLD/datapacks
 
-rm -rf "$CONFIGS/logs/latest" && ln -sfr "$CONFIGS/logs/$DATE" "$CONFIGS/logs/latest"
-rm -rf $SERVER/logs && ln -sf "$CONFIGS/logs/$DATE" $SERVER/logs
+rm -rf "$SETUP_FILES/logs/latest" && ln -sfr "$SETUP_FILES/logs/$DATE" "$SETUP_FILES/logs/latest"
+rm -rf $SERVER/logs && ln -sf "$SETUP_FILES/logs/$DATE" $SERVER/logs
 rm -rf $SERVER/world && ln -sf $WORLD $SERVER/world
 
 # ---------------------------------- Copy config files to the volume ---------------------------------------------------
@@ -83,20 +83,37 @@ hydrate_config "png" $excludes
 # shellcheck disable=SC2128
 hydrate_config "conf" $excludes
 
-mkdir -p "$CONFIGS/server/config"
+# shellcheck disable=SC2086
+# shellcheck disable=SC2128
+hydrate_config "yml" $excludes
+
+# shellcheck disable=SC2086
+# shellcheck disable=SC2128
+hydrate_config "db" $excludes
+
+# shellcheck disable=SC2086
+# shellcheck disable=SC2128
+hydrate_config "txt" $excludes
+
+
+mkdir -p "$SETUP_FILES/server/config"
 
 if [ -d $SERVER/config ]; then
-  mv $SERVER/config/* "$CONFIGS/server/config"
+  mv $SERVER/config/* "$SETUP_FILES/server/config"
 fi
 
 # ----------------------------------------------------------------------------------------------------------------------
 # ---------------------------------- Replacing files from the volume ---------------------------------------------------
 
-for HC_FILE in "$CONFIGS"/server/*; do
+for HC_FILE in "$SETUP_FILES"/server/*; do
   ln -sfr "$HC_FILE" "$SERVER/$(basename "$HC_FILE")"
 done
 
-ln -sfr "$CONFIGS/server/config" "$SERVER/config"
+ln -sfr "$SETUP_FILES/server/config" "$SERVER/config"
+
+if [ -d $SETUP_FILES/server/datapacks ]; then
+  ln -sfr "$SETUP_FILES/server/datapacks" "$WORLD/datapacks"
+fi
 
 # ----------------------------------------------------------------------------------------------------------------------
 # -------------------------------------- Adjusting Configuration -------------------------------------------------------
@@ -106,13 +123,13 @@ setConfig "query.port" "${QUERY_PORT}" "$SERVER/server.properties"
 setConfig "rcon.port" "${RCON_PORT}" "$SERVER/server.properties"
 setConfig "rcon.password" "${RCON_PASSWORD}" "$SERVER/server.properties"
 
-if [ -f "$CONFIGS/scripts/configure.sh" ]; then
+if [ -f "$SETUP_FILES/scripts/configure.sh" ]; then
   echo "**** Running configure.sh ****"
-  chmod +x "$CONFIGS/scripts/configure.sh"
-  "$CONFIGS/scripts/configure.sh"
+  chmod +x "$SETUP_FILES/scripts/configure.sh"
+  "$SETUP_FILES/scripts/configure.sh"
 else
-  cp /minecraft/scripts/templates/configure.sh "$CONFIGS/scripts/configure.sh" && \
-  chmod +x "$CONFIGS/scripts/configure.sh"
+  cp /minecraft/scripts/templates/configure.sh "$SETUP_FILES/scripts/configure.sh" && \
+  chmod +x "$SETUP_FILES/scripts/configure.sh"
 fi
 
 
@@ -134,10 +151,10 @@ if [ -f $SERVER/modlist.json ]; then
   echo "**** modlist.json found, replacing the loader and game version ****"
 
   # update the loader property in the modlist.json to fabric
-  jq '.loader = "fabric"' $SERVER/modlist.json > $SERVER/modlist.json.tmp && mv $SERVER/modlist.json.tmp $CONFIGS/server/modlist.json
+  jq '.loader = "fabric"' $SERVER/modlist.json > $SERVER/modlist.json.tmp && mv $SERVER/modlist.json.tmp $SETUP_FILES/server/modlist.json
 
   # update the gameVersion property in the modlist.json to the current version
-  jq '.gameVersion = "'"$MC_VERSION"'"' $SERVER/modlist.json > $SERVER/modlist.json.tmp && mv $SERVER/modlist.json.tmp $CONFIGS/server/modlist.json
+  jq '.gameVersion = "'"$MC_VERSION"'"' $SERVER/modlist.json > $SERVER/modlist.json.tmp && mv $SERVER/modlist.json.tmp $SETUP_FILES/server/modlist.json
 
   echo "**** Installing mods ****"
   (
@@ -151,9 +168,9 @@ if [ -f $SERVER/modlist.json ]; then
       ./mmm update
     )
   fi
-  if [ ! -f $CONFIGS/server/modlist-lock.json ]; then
-    mv "$SERVER/modlist-lock.json" "$CONFIGS/server/modlist-lock.json"
-    ln -sfr "$CONFIGS/server/modlist-lock.json" "$SERVER/modlist-lock.json"
+  if [ ! -f $SETUP_FILES/server/modlist-lock.json ]; then
+    mv "$SERVER/modlist-lock.json" "$SETUP_FILES/server/modlist-lock.json"
+    ln -sfr "$SETUP_FILES/server/modlist-lock.json" "$SERVER/modlist-lock.json"
   fi
 else
   echo "**** no modlist.json exists, auto update can't happen ****"

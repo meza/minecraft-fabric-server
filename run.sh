@@ -9,7 +9,7 @@ if [ -z "$1" ]; then
     -e LOCAL_UID="$(id -u "$USER")" \
     -e LOCAL_GID="$(id -g "$USER")" \
     -v"$(pwd)/tmp/world:/minecraft/world" \
-    -v"$(pwd)/tmp/config:/minecraft/config" \
+    -v"$(pwd)/tmp/config:/minecraft/setup-files" \
     -v"$(pwd)/tmp/server:/minecraft/server" \
     -p 25565:25565 \
     -p 25575:25575 \
@@ -23,7 +23,7 @@ else
     -e BACKUP_PATH="file:///minecraft/backups" \
     --env-file .env \
     -v"$(pwd)/tmp/world:/minecraft/world" \
-    -v"$(pwd)/tmp/config:/minecraft/config" \
+    -v"$(pwd)/tmp/config:/minecraft/setup-files" \
     -v"$(pwd)/tmp/server:/minecraft/server" \
     -p 25565:25565 \
     -p 25575:25575 \
