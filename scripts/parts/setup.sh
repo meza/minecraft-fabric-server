@@ -209,7 +209,13 @@ echo "**** Starting Minecraft ****"
 cd $SERVER || exit 1
 screen -wipe 2>/dev/null
 
-backup
+# if BACKUP_ON_STARTUP is true then run
+
+if [ "$BACKUP_ON_STARTUP" = true ]; then
+  echo "**** Running backup ****"
+  backup
+  echo "**** Backup done ****"
+fi
 
 screen -L -Logfile "$SERVER/screenlog.0" -dmS minecraft "$JAVA_BIN" -Xms${XMS} -Xmx${XMX} -XX:+AlwaysPreTouch \
   -XX:+ParallelRefProcEnabled -XX:+DisableExplicitGC -XX:+UseG1GC -Dsun.rmi.dgc.server.gcInterval=2147483646 \
