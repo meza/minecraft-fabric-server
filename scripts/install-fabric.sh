@@ -6,8 +6,17 @@ MINECRAFT_JAR=$3
 INSTALLER_META_FILE=$4
 LOADER_META_FILE=$5
 
+echo Minecraft version: "$MINECRAFT_VERSION"
+echo Minecraft directory: "$MINECRAFT_DIR"
+echo Minecraft jar: "$MINECRAFT_JAR"
+echo Installer meta file: "$INSTALLER_META_FILE"
+echo Loader meta file: "$LOADER_META_FILE"
+
 LATEST_INSTALLER_VERSION=$(perl -0777 -ne 'print $1 if /<latest>(.*?)<\/latest>/s' "$INSTALLER_META_FILE")
 LATEST_LOADER_VERSION=$(perl -0777 -ne 'print $1 if /<latest>(.*?)<\/latest>/s' "$LOADER_META_FILE")
+
+echo Latest installer version: "$LATEST_INSTALLER_VERSION"
+echo Latest loader version: "$LATEST_LOADER_VERSION"
 
 LAUNCHER_URL="https://meta.fabricmc.net/v2/versions/loader/${MINECRAFT_VERSION}/${LATEST_LOADER_VERSION}/${LATEST_INSTALLER_VERSION}/server/jar"
 
@@ -19,7 +28,7 @@ if [ ! -f "$VERSION_FILE" ]; then
   echo "Installing Fabric ${LATEST_LOADER_VERSION} for Minecraft ${MINECRAFT_VERSION}"
   mkdir -p "$MINECRAFT_DIR" || exit 1
   wget -O installer.jar "https://maven.fabricmc.net/net/fabricmc/fabric-installer/${LATEST_INSTALLER_VERSION}/fabric-installer-${LATEST_INSTALLER_VERSION}.jar" || exit 1
-  java -jar installer.jar server -mcversion "$MINECRAFT_VERSION" || exit 1
+  java -jar installer.jar server -loader ${LATEST_LOADER_VERSION} -mcversion $MINECRAFT_VERSION || exit 1
 
   rm installer.jar
   cp -rf libraries/ "$MINECRAFT_DIR" || exit 1

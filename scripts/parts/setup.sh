@@ -123,11 +123,13 @@ fi
 
 if [ "$AUTO_UPDATE_FABRIC" = true ]; then
   echo "**** Auto Updating Fabric ****"
-  /minecraft/tools/install-fabric.sh "$MC_VERSION" "$SERVER" "minecraft_server.jar"
+  /minecraft/tools/install-fabric.sh "$MC_VERSION" "$SERVER" "minecraft_server.jar" "/minecraft/installer-metadata.xml" "/minecraft/loader-metadata.xml"
 fi
 
 
 if [ -f $SERVER/modlist.json ]; then
+
+  mkdir -p $SERVER/mods
 
   echo "**** modlist.json found, replacing the loader and game version ****"
 

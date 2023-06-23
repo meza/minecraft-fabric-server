@@ -41,7 +41,7 @@ RUN mkdir -p /minecraft/config \
     && echo ${MINECRAFT_VERSION} > /minecraft/version.txt
 
 # Cache Busting - if necessary
-ADD "https://launchermeta.mojang.com/mc/game/version_manifest.json" /minecraft/version_manifest.json
+ADD https://launchermeta.mojang.com/mc/game/version_manifest.json /minecraft/version_manifest.json
 
 RUN cat /minecraft/version_manifest.json | jq -r '.latest.release' > /minecraft/latest-version.txt && \
     LATEST_VERSION=$(cat "/minecraft/latest-version.txt"); \
@@ -71,19 +71,18 @@ FROM base as fabric
 
 WORKDIR /
 
-ARG MINECRAFT_VERSION
-
-COPY --from=minecraft /minecraft/latest-version.txt /minecraft/latest-version.txt
+COPY --from=minecraft /minecraft/installed-version.txt /minecraft/installed-version.txt
 
 WORKDIR /tmp/fabric
 
 # Cache Busting - if necessary
-ADD "https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml" /minecraft/installer-metadata.xml
-ADD "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml" /minecraft/loader-metadata.xml
+ADD https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml /minecraft/installer-metadata.xml
+ADD https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml /minecraft/loader-metadata.xml
 
 COPY --link scripts/install-fabric.sh /minecraft/tools/install-fabric.sh
 
-RUN LATEST_VERSION=$(cat "/minecraft/latest-version.txt"); /minecraft/tools/install-fabric.sh "${MINECRAFT_VERSION:-$LATEST_VERSION}" "/minecraft/server" "minecraft_server.jar" "/minecraft/installer-metadata.xml" "/minecraft/loader-metadata.xml"
+RUN export MC_VERSION=$(cat "/minecraft/installed-version.txt") && \
+    /minecraft/tools/install-fabric.sh "${MC_VERSION}" "/minecraft/server" "minecraft_server.jar" "/minecraft/installer-metadata.xml" "/minecraft/loader-metadata.xml"
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -136,6 +135,8 @@ COPY --from=minecraft /minecraft /minecraft
 COPY --from=fabric /minecraft/server /minecraft/server
 COPY --from=fabric /minecraft/fabric-launcher-version.txt /minecraft/fabric-launcher-version.txt
 COPY --from=fabric /minecraft/tools/install-fabric.sh /minecraft/tools/install-fabric.sh
+COPY --from=fabric /minecraft/loader-metadata.xml /minecraft/loader-metadata.xml
+COPY --from=fabric /minecraft/installer-metadata.xml /minecraft/installer-metadata.xml
 COPY --from=mmm /minecraft/server/mmm /minecraft/server/mmm
 COPY --from=mcrcon /mcrcon/mcrcon /minecraft/tools/mcrcon
 COPY --from=mcrcon /minecraft/tools/minecraft.sh /minecraft/tools/minecraft.sh

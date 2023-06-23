@@ -13,7 +13,7 @@ if [ -z "$1" ]; then
     -v"$(pwd)/tmp/server:/minecraft/server" \
     -p 25565:25565 \
     -p 25575:25575 \
-    mctest
+    mctest:1.19.2
 else
   docker run --rm -it \
     --name "mct" \
@@ -27,5 +27,5 @@ else
     -v"$(pwd)/tmp/server:/minecraft/server" \
     -p 25565:25565 \
     -p 25575:25575 \
-    mctest "$1"
+    mctest:1.19.2 "$1"
 fi

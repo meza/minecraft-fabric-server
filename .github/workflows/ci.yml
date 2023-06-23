@@ -48,6 +48,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
+          build-args: |
+            MINECRAFT_VERSION=${{ matrix.version }}
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}-dev
       - name: Build and push semantic versions
