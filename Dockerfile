@@ -193,12 +193,10 @@ VOLUME /minecraft/server
 
 STOPSIGNAL SIGUSR1
 
-# test if the version that is in the /minecraft/version.txt file has a corresponding folder in the /minecraft/server/versions folder
-RUN export MC_VERSION=$(cat "/minecraft/installed-version.txt") && \
-    if [ ! -d "/minecraft/server/versions/${MC_VERSION}" ]; then \
-      echo "Version ${MC_VERSION} not found in /minecraft/server/versions folder."; \
-      exit 1; \
-    fi
+
+RUN chown -R minecraft:minecraft /minecraft && \
+    chmod +x /minecraft/start.sh && \
+    chmod +x /minecraft/scripts/**/*.sh
 
 WORKDIR /minecraft/server
 

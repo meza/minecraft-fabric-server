@@ -59,7 +59,7 @@ rm -rf $SERVER/world && ln -sf $WORLD $SERVER/world
 
 echo "**** Setting up the main minecraft files ****"
 
-rsync -q -r --ignore-existing /minecraft/server-init/ /minecraft/server
+#rsync -q -r --ignore-existing /minecraft/server-init/ /minecraft/server
 
 excludes=(fabric-server-launcher.properties)
 
