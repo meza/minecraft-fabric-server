@@ -78,12 +78,12 @@ COPY --from=minecraft /minecraft/latest-version.txt /minecraft/latest-version.tx
 WORKDIR /tmp/fabric
 
 # Cache Busting - if necessary
-ADD "https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml" /tmp/fabric/installer-metadata.xml
-ADD "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml" /tmp/fabric/loader-metadata.xml
+ADD "https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml" /minecraft/installer-metadata.xml
+ADD "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml" /minecraft/loader-metadata.xml
 
 COPY --link scripts/install-fabric.sh /minecraft/tools/install-fabric.sh
 
-RUN LATEST_VERSION=$(cat "/minecraft/latest-version.txt"); /minecraft/tools/install-fabric.sh "${MINECRAFT_VERSION:-$LATEST_VERSION}" "/minecraft/server" "minecraft_server.jar" "/tmp/fabric/installer-metadata.xml" "/tmp/fabric/loader-metadata.xml"
+RUN LATEST_VERSION=$(cat "/minecraft/latest-version.txt"); /minecraft/tools/install-fabric.sh "${MINECRAFT_VERSION:-$LATEST_VERSION}" "/minecraft/server" "minecraft_server.jar" "/minecraft/installer-metadata.xml" "/minecraft/loader-metadata.xml"
 
 # ----------------------------------------------------------------------------------------------------------------------
 
