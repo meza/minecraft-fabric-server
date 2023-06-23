@@ -97,6 +97,7 @@ hydrate_config "txt" $excludes
 
 
 mkdir -p "$SETUP_FILES/server/config"
+mkdir -p "$SETUP_FILES/server/lib"
 
 #if [ -d $SERVER/config ]; then
 #  mv $SERVER/config/* "$SETUP_FILES/server/config"
@@ -232,6 +233,7 @@ screen -L -Logfile "$SERVER/screenlog.0" -dmS minecraft "$JAVA_BIN" -Xms${XMS} -
   -Dgraal.UsePriorityInlining=true -Dgraal.Vectorization=true -Dgraal.OptDuplication=true -Dgraal.DetectInvertedLoopsAsCounted=true -Dgraal.LoopInversion=true \
   -Dgraal.VectorizeHashes=true -Dgraal.EnterprisePartialUnroll=true -Dgraal.VectorizeSIMD=true -Dgraal.StripMineNonCountedLoops=true -Dgraal.SpeculativeGuardMovement=true \
   -Dgraal.InfeasiblePathCorrelation=true \
+  -cp "${SETUP_FILES}/server/lib/*" \
   -jar "${SERVER}/fabric-server-launch.jar" \
   nogui
 
