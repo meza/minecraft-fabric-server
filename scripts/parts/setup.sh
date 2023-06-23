@@ -97,7 +97,6 @@ hydrate_config "txt" $excludes
 
 
 mkdir -p "$SETUP_FILES/server/config"
-mkdir -p "$SETUP_FILES/server/lib"
 
 #if [ -d $SERVER/config ]; then
 #  mv $SERVER/config/* "$SETUP_FILES/server/config"
