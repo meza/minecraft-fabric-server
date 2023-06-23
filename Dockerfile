@@ -203,4 +203,6 @@ WORKDIR /minecraft/server
 HEALTHCHECK --start-period=5m --interval=1m --retries=30 --timeout=2s \
   CMD nc -zvw5 localhost $QUERY_PORT
 
+RUN apk add libwebp libwebp-tools
+
 CMD ["/minecraft/start.sh"]
