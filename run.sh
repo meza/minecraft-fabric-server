@@ -2,12 +2,12 @@
 
 if [ -z "$1" ]; then
   docker run --rm -it \
+    -e RCON_PASSWORD="test" \
     --name "mct" \
+    --env-file .env \
+    -e BACKUP_PATH="file:///minecraft/backups" \
     -e LOCAL_UID="$(id -u "$USER")" \
     -e LOCAL_GID="$(id -g "$USER")" \
-    -e RCON_PASSWORD="test" \
-    -e BACKUP_PATH="file:///minecraft/backups" \
-    --env-file .env \
     -v"$(pwd)/tmp/world:/minecraft/world" \
     -v"$(pwd)/tmp/config:/minecraft/config" \
     -v"$(pwd)/tmp/server:/minecraft/server" \

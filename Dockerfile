@@ -89,8 +89,10 @@ RUN LATEST_VERSION=$(cat "/minecraft/latest-version.txt"); /minecraft/tools/inst
 
 FROM base as mmm
 
+ADD "https://api.github.com/repos/meza/minecraft-mod-manager/releases/latest" /tmp/mmm.latest.json
+
 RUN mkdir -p /minecraft/server && \
-    curl -s https://api.github.com/repos/meza/minecraft-mod-manager/releases/latest | \
+    cat /tmp/mmm.latest.json | \
     jq -r '.assets[] | select(.label | contains("Linux")) | .browser_download_url' | \
     xargs wget -O /tmp/mmm.zip && \
     unzip /tmp/mmm.zip -d /minecraft/server
