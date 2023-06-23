@@ -4,7 +4,7 @@ FROM eclipse-temurin:20-alpine as base
 
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories && \
     apk update && \
-    apk add mc bash perl curl wget rsync shadow coreutils gcompat libstdc++ jq
+    apk add mc bash perl curl wget rsync shadow coreutils gcompat libstdc++ jq sed
 
 ENV PYTHONUNBUFFERED=1
 
