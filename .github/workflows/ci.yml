@@ -31,6 +31,8 @@ jobs:
       matrix:
         version: [ "1.19.2", "1.19.4", "1.20", "1.20.1" ]
     steps:
+      - name: Debug
+        run: echo "Building for ${{ matrix.version }}" >> $GITHUB_STEP_SUMMARY
       - uses: actions/checkout@v3
       - uses: codfish/semantic-release-action@v2
         id: semantic
@@ -47,6 +49,7 @@ jobs:
       - name: Build and push for normal versions
         uses: docker/build-push-action@v3
         with:
+          context: .
           push: true
           build-args: |
             MINECRAFT_VERSION=${{ matrix.version }}
@@ -56,6 +59,7 @@ jobs:
         uses: docker/build-push-action@v3
         if: needs.analyze.outputs.new-release
         with:
+          context: .
           build-args: |
             MINECRAFT_VERSION=${{ matrix.version }}
           push: true
