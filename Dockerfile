@@ -4,7 +4,7 @@ FROM eclipse-temurin:20-alpine as base
 
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories && \
     apk update && \
-    apk add mc bash perl curl wget rsync shadow coreutils gcompat libstdc++ jq sed
+    apk add --update mc bash perl curl wget rsync shadow coreutils gcompat libstdc++ jq sed busybox-suid
 
 ENV PYTHONUNBUFFERED=1
 
@@ -12,8 +12,6 @@ RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python && \
     python3 -m ensurepip && \
     apk add py3-setuptools && \
     pip3 install --no-cache --upgrade pip setuptools
-
-COPY --link etc/ /etc
 
 RUN addgroup -g 1000 -S minecraft && adduser -D -u 1000 minecraft -G minecraft -s /bin/bash && \
     mkdir -p /minecraft && \
@@ -117,11 +115,20 @@ FROM base as backup
 RUN apk add rsync duplicity duply
 RUN pip3 install boto3==1.15.3
 
-COPY --link etc/duply/ /home/minecraft/.duply
+COPY --link duply/ /home/minecraft/.duply
 
 RUN touch /var/log/duply.log && \
     touch /var/log/duply.error && \
-    chmod a+rw /var/log/duply*
+    chmod a+rw /var/log/duply* && \
+    chown -R minecraft:minecraft /home/minecraft/.duply
+
+USER minecraft
+
+RUN (crontab -l ; echo "15 * * * * /usr/bin/duply minecraft purgeAuto --force --allow-source-mismatch 2> /var/log/duply.err 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
+    (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft backup now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
+    (crontab -l ; echo "30 23 * * * /usr/bin/duply minecraft full now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
+    echo "Crontab prepared"
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -152,6 +159,7 @@ COPY scripts/parts /minecraft/scripts
 COPY scripts/start.sh /minecraft/start.sh
 
 RUN chown -R minecraft:minecraft /minecraft && \
+RUN chown -R minecraft:minecraft /home/minecraft && \
     chmod +x /minecraft/start.sh && \
     chmod +x /minecraft/scripts/**/*.sh
 
@@ -190,10 +198,6 @@ VOLUME /minecraft/server
 
 STOPSIGNAL SIGUSR1
 
-RUN chown -R minecraft:minecraft /minecraft && \
-    chmod +x /minecraft/start.sh && \
-    chmod +x /minecraft/scripts/**/*.sh
-
 WORKDIR /minecraft/server
 
 HEALTHCHECK --start-period=5m --interval=1m --retries=30 --timeout=2s \
@@ -202,9 +206,5 @@ HEALTHCHECK --start-period=5m --interval=1m --retries=30 --timeout=2s \
 RUN apk add libwebp libwebp-tools
 
 USER minecraft
-
-RUN (crontab -l ; echo "15 * * * * /usr/bin/duply minecraft purgeAuto --force --allow-source-mismatch 2> /var/log/duply.err 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
-    (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft backup now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
-    (crontab -l ; echo "30 23 * * * /usr/bin/duply minecraft full now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab -
 
 CMD ["/minecraft/start.sh"]
