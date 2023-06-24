@@ -119,10 +119,7 @@ RUN pip3 install boto3==1.15.3
 
 COPY --link etc/duply/ /home/minecraft/.duply
 
-RUN (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft purgeAuto --force --allow-source-mismatch 2> /var/log/duply.err 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
-    (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft backup now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
-    (crontab -l ; echo "30 23 * * * /usr/bin/duply minecraft full now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
-    touch /var/log/duply.log && \
+RUN touch /var/log/duply.log && \
     touch /var/log/duply.error && \
     chmod a+rw /var/log/duply*
 
@@ -193,7 +190,6 @@ VOLUME /minecraft/server
 
 STOPSIGNAL SIGUSR1
 
-
 RUN chown -R minecraft:minecraft /minecraft && \
     chmod +x /minecraft/start.sh && \
     chmod +x /minecraft/scripts/**/*.sh
@@ -204,5 +200,11 @@ HEALTHCHECK --start-period=5m --interval=1m --retries=30 --timeout=2s \
   CMD nc -zvw5 localhost $QUERY_PORT
 
 RUN apk add libwebp libwebp-tools
+
+USER minecraft
+
+RUN (crontab -l ; echo "15 * * * * /usr/bin/duply minecraft purgeAuto --force --allow-source-mismatch 2> /var/log/duply.err 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
+    (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft backup now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
+    (crontab -l ; echo "30 23 * * * /usr/bin/duply minecraft full now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab -
 
 CMD ["/minecraft/start.sh"]
