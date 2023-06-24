@@ -4,7 +4,7 @@ FROM eclipse-temurin:20-alpine as base
 
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories && \
     apk update && \
-    apk add --update mc bash perl curl wget rsync shadow coreutils gcompat libstdc++ jq sed busybox-suid
+    apk add --update mc bash perl curl wget rsync shadow coreutils gcompat libstdc++ jq screen sed busybox-suid
 
 ENV PYTHONUNBUFFERED=1
 
@@ -26,8 +26,6 @@ ARG RCON_PASSWORD="minecraft"
 ARG RCON_PORT=25575
 ARG MINECRAFT_PORT=25565
 ARG QUERY_PORT=25565
-
-RUN apk add jq
 
 WORKDIR /
 
@@ -129,12 +127,11 @@ RUN (crontab -l ; echo "15 * * * * /usr/bin/duply minecraft purgeAuto --force --
     (crontab -l ; echo "30 23 * * * /usr/bin/duply minecraft full now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
     echo "Crontab prepared"
 
+USER root
 
 # ----------------------------------------------------------------------------------------------------------------------
 
 FROM backup as prepare
-
-RUN apk add screen jq
 
 COPY --from=minecraft /minecraft /minecraft
 COPY --from=fabric /minecraft/server /minecraft/server
@@ -159,7 +156,7 @@ COPY scripts/parts /minecraft/scripts
 COPY scripts/start.sh /minecraft/start.sh
 
 RUN chown -R minecraft:minecraft /minecraft && \
-RUN chown -R minecraft:minecraft /home/minecraft && \
+    chown -R minecraft:minecraft /home/minecraft && \
     chmod +x /minecraft/start.sh && \
     chmod +x /minecraft/scripts/**/*.sh
 
@@ -203,6 +200,7 @@ WORKDIR /minecraft/server
 HEALTHCHECK --start-period=5m --interval=1m --retries=30 --timeout=2s \
   CMD nc -zvw5 localhost $QUERY_PORT
 
+# This should go into the custom image for Mezacraft. Will be extracted soon
 RUN apk add libwebp libwebp-tools
 
 USER minecraft
