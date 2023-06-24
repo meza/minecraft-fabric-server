@@ -203,6 +203,4 @@ HEALTHCHECK --start-period=5m --interval=1m --retries=30 --timeout=2s \
 # This should go into the custom image for Mezacraft. Will be extracted soon
 RUN apk add libwebp libwebp-tools
 
-USER minecraft
-
 CMD ["/minecraft/start.sh"]
