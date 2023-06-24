@@ -1,1 +1,3 @@
-screen -S minecraft -p 0 -X stuff "save-on^M"  || exit 0
+if screen -ls | grep minecraft; then
+  screen -S minecraft -p 0 -X stuff "save-on^M"  || exit 0
+fi

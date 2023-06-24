@@ -165,7 +165,7 @@ if [ -f $SERVER/modlist.json ]; then
     cd $SERVER || exit 1
     ./mmm install
   )
-  if [ "$AUTO_UPDATE_MODS" = true ]; then
+  if [ "$AUTO_UPDATE_MODS" = "true" ]; then
     echo "**** Auto Updating ****"
     (
       cd $SERVER || exit 1
@@ -215,7 +215,7 @@ screen -wipe 2>/dev/null
 
 # if BACKUP_ON_STARTUP is true then run
 
-if [ "$BACKUP_ON_STARTUP" = true ]; then
+if [ "$BACKUP_ON_STARTUP" = "true" ]; then
   echo "**** Running backup ****"
   backup
   echo "**** Backup done ****"
