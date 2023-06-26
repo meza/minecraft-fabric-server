@@ -20,6 +20,7 @@ export -f backup
 
 setConfig() {
   SC_FILE=$3
+  echo "Setting $1 in $SC_FILE"
   sed -i --follow-symlinks "s/$1=.*/$1=$2/g" "$SC_FILE"
 }
 

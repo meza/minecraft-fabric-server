@@ -107,12 +107,20 @@ mkdir -p "$SETUP_FILES/server/config"
 # ---------------------------------- Replacing files from the volume ---------------------------------------------------
 
 for HC_FILE in "$SETUP_FILES"/server/*; do
+  HC_BASE=$(basename "$HC_FILE")
   # if target file exists, remove it
-  if [ -f "$SERVER/$(basename "$HC_FILE")" ]; then
-    rm -rf "$SERVER/$(basename "$HC_FILE")"
+  if [ -f "$SERVER/$HC_BASE" ]; then
+    rm -rf "$SERVER/$HC_BASE"
   fi
 
-  ln -sfr "$HC_FILE" "$SERVER/$(basename "$HC_FILE")"
+  # if HC_BASE is server.properties, then we need to copy it to the server directory
+  if [ "$HC_BASE" = "server.properties" ]; then
+    cp --remove-destination "$HC_FILE" "$SERVER/$HC_BASE"
+    continue
+  else
+    ln -sfr "$HC_FILE" "$SERVER/$HC_BASE"
+  fi
+
 done
 
 if [ -d $SETUP_FILES/datapacks ]; then
