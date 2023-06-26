@@ -137,12 +137,6 @@ fi
 # ----------------------------------------------------------------------------------------------------------------------
 # -------------------------------------- Adjusting Configuration -------------------------------------------------------
 
-echo "**** Adjusting server.properties configuration ****"
-setConfig "server-port" "${MINECRAFT_PORT}" "$SERVER/server.properties"
-setConfig "query.port" "${QUERY_PORT}" "$SERVER/server.properties"
-setConfig "rcon.port" "${RCON_PORT}" "$SERVER/server.properties"
-setConfig "rcon.password" "${RCON_PASSWORD}" "$SERVER/server.properties"
-
 if [ -f "$SETUP_FILES/scripts/configure.sh" ]; then
   echo "**** Running configure.sh ****"
   chmod +x "$SETUP_FILES/scripts/configure.sh"
@@ -151,6 +145,12 @@ else
   cp /minecraft/scripts/templates/configure.sh "$SETUP_FILES/scripts/configure.sh" && \
   chmod +x "$SETUP_FILES/scripts/configure.sh"
 fi
+
+echo "**** Adjusting server.properties configuration ****"
+setConfig "server-port" "${MINECRAFT_PORT}" "$SERVER/server.properties"
+setConfig "query.port" "${QUERY_PORT}" "$SERVER/server.properties"
+setConfig "rcon.port" "${RCON_PORT}" "$SERVER/server.properties"
+setConfig "rcon.password" "${RCON_PASSWORD}" "$SERVER/server.properties"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
