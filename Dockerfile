@@ -197,10 +197,10 @@ STOPSIGNAL SIGUSR1
 
 WORKDIR /minecraft/server
 
-HEALTHCHECK --start-period=5m --interval=1m --retries=30 --timeout=2s \
-  CMD nc -zvw5 localhost $QUERY_PORT
+COPY --link scripts/healthcheck.sh /healthcheck.sh
+RUN chmod +x /healthcheck.sh
 
-# This should go into the custom image for Mezacraft. Will be extracted soon
-RUN apk add libwebp libwebp-tools
+HEALTHCHECK --start-period=5m --interval=1m --retries=30 --timeout=2s \
+  CMD /healthcheck.sh
 
 CMD ["/minecraft/start.sh"]
