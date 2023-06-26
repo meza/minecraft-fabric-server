@@ -115,6 +115,7 @@ for HC_FILE in "$SETUP_FILES"/server/*; do
 
   # if HC_BASE is server.properties, then we need to copy it to the server directory
   if [ "$HC_BASE" = "server.properties" ]; then
+    echo "**** Copying server.properties ****"
     cp --remove-destination "$HC_FILE" "$SERVER/$HC_BASE"
     continue
   else
@@ -124,12 +125,19 @@ for HC_FILE in "$SETUP_FILES"/server/*; do
 done
 
 if [ -d $SETUP_FILES/datapacks ]; then
-  ln -sfr "$SETUP_FILES/datapacks" "$WORLD/datapacks"
+  if [ -d $WORLD/datapacks ]; then
+    echo "**** Removing existing datapacks ****"
+    echo "**** Please put all datapacks in your setup-files/datapacks folder ****"
+    rm -rf $WORLD/datapacks
+  fi
+
+  rsync -q -r --ignore-existing "$SETUP_FILES/datapacks" "$WORLD"
 fi
 
 # ----------------------------------------------------------------------------------------------------------------------
 # -------------------------------------- Adjusting Configuration -------------------------------------------------------
 
+echo "**** Adjusting server.properties configuration ****"
 setConfig "server-port" "${MINECRAFT_PORT}" "$SERVER/server.properties"
 setConfig "query.port" "${QUERY_PORT}" "$SERVER/server.properties"
 setConfig "rcon.port" "${RCON_PORT}" "$SERVER/server.properties"
