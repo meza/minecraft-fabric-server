@@ -54,7 +54,7 @@ mkdir -p $WORLD/datapacks
 
 rm -rf "$SETUP_FILES/logs/latest" && ln -sfr "$SETUP_FILES/logs/$DATE" "$SETUP_FILES/logs/latest"
 rm -rf $SERVER/logs && ln -sf "$SETUP_FILES/logs/$DATE" $SERVER/logs
-rm -rf $SERVER/world && ln -sf $WORLD $SERVER/world
+rm -rf $SERVER/world && ln -s $WORLD $SERVER/world
 
 # ---------------------------------- Copy config files to the volume ---------------------------------------------------
 
@@ -199,9 +199,11 @@ fi
 # ----------------------------------------------------------------------------------------------------------------------
 
 stop_mc_now() {
-  tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Shutdown in 1 minute.","color":"yellow"}]'
-  echo "Stopping mc"
-  sleep 60
+  if ! numPlayers; then # if there are players, warn them
+    tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Shutdown in 1 minute.","color":"yellow"}]'
+    echo "Stopping mc"
+    sleep 60
+  fi
   tell_minecraft "save-all"
   tell_minecraft "save-off"
   echo "Running backup"
@@ -213,13 +215,17 @@ stop_mc_now() {
 }
 
 stop_mc() {
-  tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Restart in 5 minutes.","color":"yellow"}]'
-  sleep 120
-  tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Restart in 3 minutes.","color":"yellow"}]'
-  sleep 60
-  tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Restart in 2 minutes.","color":"yellow"}]'
-  sleep 60
+  if numPlayers; then # if there are no players, stop now
+    stop_mc_now
+  else
+    tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Restart in 5 minutes.","color":"yellow"}]'
+    sleep 120
+    tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Restart in 3 minutes.","color":"yellow"}]'
+    sleep 60
+    tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Restart in 2 minutes.","color":"yellow"}]'
+    sleep 60
   stop_mc_now
+  fi
 }
 
 trap stop_mc SIGUSR1
