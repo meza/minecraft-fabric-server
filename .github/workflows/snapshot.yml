@@ -1,0 +1,75 @@
+name: Build and Deploy
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+
+env:
+  IMAGE_NAME: minecraft-fabric-server
+
+jobs:
+  getsnapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: set current version
+        id: current_version
+        run: echo "snapshot_version=$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.latest.snapshot')" >> "$GITHUB_OUTPUT"
+      - name: get cache
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: /tmp/snapshot_version.txt
+          key: snapshot_version
+      - name: is newer version available
+        id: newer_version
+        run: |
+          if [ -f /tmp/snapshot_version.txt ]; then
+            if [ "$(cat /tmp/snapshot_version.txt)" != "${{ steps.current_version.outputs.snapshot_version }}" ]; then
+              echo "new_snapshot=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "new_snapshot=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: save current version
+        if: steps.newer_version.outputs.new_snapshot == 'true'
+        run: echo "${{ steps.current_version.outputs.snapshot_version }}" > /tmp/snapshot_version.txt
+  build:
+    needs: getsnapshot
+    if: needs.getsnapshot.outputs.new_snapshot == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: codfish/semantic-release-action@v2
+        id: semantic
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dry_run: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push for normal versions
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          no-cache: true
+          build-args: |
+            MINECRAFT_VERSION=${{ needs.getsnapshot.outputs.snapshot_version }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.snapshot_version }}-dev
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:snapshot-latest
+      - name: Build and push semantic versions
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          build-args: |
+            MINECRAFT_VERSION=${{ needs.getsnapshot.outputs.snapshot_version }}
+          push: true
+          no-cache: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.snapshot_version }}-latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.snapshot_version }}
