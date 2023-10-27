@@ -1,6 +1,9 @@
-name: Build and Deploy
+name: Process Snapthos
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     - cron: '*/30 * * * *'
 
@@ -19,24 +22,18 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/snapshot_version.txt
-          key: snapshot_version-${{ github.run_id }}
-          restore-keys: |
-            snapshot_version
-      - name: is newer version available
-        id: newer_version
-        run: |
-          if [ -f /tmp/snapshot_version.txt ]; then
-            if [ "$(cat /tmp/snapshot_version.txt)" != "${{ steps.current_version.outputs.snapshot_version }}" ]; then
-              echo "new_snapshot=true" >> "$GITHUB_OUTPUT"
-            fi
-          else
-            echo "new_snapshot=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: save current version
-        run: echo "${{ steps.current_version.outputs.snapshot_version }}" > /tmp/snapshot_version.txt
+          key: snapshot_version-${{ steps.current_version.outputs.snapshot_version }}
+      - name: set output
+        id: output
+        run: | 
+          echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_OUTPUT" &&
+          echo "BUILD=${{ steps.cache.outputs.cache-hit }}" >> "$GITHUB_OUTPUT" &&
+          echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_STEP_SUMMARY" &&
+          echo "BUILD=${{ steps.cache.outputs.cache-hit }}" >> "$GITHUB_STEP_SUMMARY"
+
   build:
     needs: getsnapshot
-    if: needs.getsnapshot.outputs.new_snapshot == 'true'
+    if: needs.getsnapshot.outputs.BUILD == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
