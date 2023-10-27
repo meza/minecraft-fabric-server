@@ -17,7 +17,7 @@ jobs:
       - name: set current version
         id: current_version
         run: |
-          echo $(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.latest.snapshot') > /tmp/snapshot_version.txt
+          echo "$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.latest.snapshot')" > /tmp/snapshot_version.txt
           echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_OUTPUT"
       - name: get cache
         id: cache
@@ -28,10 +28,13 @@ jobs:
       - name: set output
         id: output
         run: | 
-          echo "BUILD=${{ steps.cache.outputs.cache-hit }}" >> "$GITHUB_OUTPUT"
+          echo "CACHED=${{ steps.cache.outputs.cache-hit }}" >> "$GITHUB_OUTPUT"
           echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_STEP_SUMMARY"
           echo "CACHED=${{ steps.cache.outputs.cache-hit }}" >> "$GITHUB_STEP_SUMMARY"
           echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_ENV"
+    outputs:
+      CACHED: ${{ steps.output.outputs.CACHED }}
+      SNAPSHOT_VERSION: ${{ steps.output.outputs.SNAPSHOT_VERSION }}
 
   build:
     needs: getsnapshot
