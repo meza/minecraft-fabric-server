@@ -24,7 +24,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/snapshot_version.txt
-          key: snapshot_version-${{ steps.current_version.outputs.snapshot_version }}
+          key: snapshot_version-${{ steps.current_version.outputs.SNAPSHOT_VERSION }}
       - name: set output
         id: output
         run: | 
@@ -37,20 +37,18 @@ jobs:
     needs: getsnapshot
     if: needs.getsnapshot.outputs.CACHED != 'true'
     runs-on: ubuntu-latest
+    env:
+      SNAPSHOT_VERSION: ${{ needs.getsnapshot.outputs.SNAPSHOT_VERSION }}
     steps:
       - uses: actions/checkout@v3
-      - uses: codfish/semantic-release-action@v2
-        id: semantic
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          dry_run: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: log the version
+        run: |
+          echo "I see the version as: ${{env.SNAPSHOT_VERSION}}" >> "$GITHUB_STEP_SUMMARY"
       - name: Build and push for normal versions
         uses: docker/build-push-action@v3
         with:
@@ -58,18 +56,8 @@ jobs:
           push: true
           no-cache: true
           build-args: |
-            MINECRAFT_VERSION=${{ needs.getsnapshot.outputs.snapshot_version }}
+            MINECRAFT_VERSION=${{ env.SNAPSHOT_VERSION }}
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.SNAPSHOT_VERSION }}-dev
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:snapshot-latest
-      - name: Build and push semantic versions
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          build-args: |
-            MINECRAFT_VERSION=${{ needs.getsnapshot.outputs.SNAPSHOT_VERSION }}
-          push: true
-          no-cache: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.SNAPSHOT_VERSION }}-latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.SNAPSHOT_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.SNAPSHOT_VERSION }}-latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.SNAPSHOT_VERSION }}
