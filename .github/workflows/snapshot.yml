@@ -60,16 +60,16 @@ jobs:
           build-args: |
             MINECRAFT_VERSION=${{ needs.getsnapshot.outputs.snapshot_version }}
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.snapshot_version }}-dev
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.SNAPSHOT_VERSION }}-dev
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:snapshot-latest
       - name: Build and push semantic versions
         uses: docker/build-push-action@v3
         with:
           context: .
           build-args: |
-            MINECRAFT_VERSION=${{ needs.getsnapshot.outputs.snapshot_version }}
+            MINECRAFT_VERSION=${{ needs.getsnapshot.outputs.SNAPSHOT_VERSION }}
           push: true
           no-cache: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.snapshot_version }}-latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.snapshot_version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.SNAPSHOT_VERSION }}-latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.getsnapshot.outputs.SNAPSHOT_VERSION }}
