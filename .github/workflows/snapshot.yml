@@ -29,10 +29,8 @@ jobs:
             fi
           else
             echo "new_snapshot=false" >> "$GITHUB_OUTPUT"
-            echo "${{ steps.current_version.outputs.snapshot_version }}" > /tmp/snapshot_version.txt
           fi
       - name: save current version
-        if: steps.newer_version.outputs.new_snapshot == 'true'
         run: echo "${{ steps.current_version.outputs.snapshot_version }}" > /tmp/snapshot_version.txt
   build:
     needs: getsnapshot

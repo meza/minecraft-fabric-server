@@ -27,6 +27,7 @@ jobs:
   build:
     needs: analyze
     runs-on: ubuntu-latest
+    if: needs.analyze.outputs.new-release
     strategy:
       matrix:
         version: [ "1.19.2", "1.19.4", "1.20", "1.20.1", "1.20.2", "23w43a" ]
