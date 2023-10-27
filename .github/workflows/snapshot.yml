@@ -21,13 +21,13 @@ jobs:
           echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_OUTPUT"
       - name: get cache
         id: cache
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: /tmp/snapshot_version.txt
           key: snapshot_version-${{ steps.current_version.outputs.SNAPSHOT_VERSION }}
       - name: set output
         id: output
-        run: | 
+        run: |
           echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_STEP_SUMMARY"
           echo "CACHED=${{ steps.cache.outputs.cache-hit }}" >> "$GITHUB_STEP_SUMMARY"
           echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_ENV"
@@ -63,3 +63,9 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:snapshot-latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.SNAPSHOT_VERSION }}-latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.SNAPSHOT_VERSION }}
+      - name: set cache
+        id: cache-set
+        uses: actions/cache/save@v3
+        with:
+          path: /tmp/snapshot_version.txt
+          key: snapshot_version-${{ env.SNAPSHOT_VERSION }}
