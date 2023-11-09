@@ -29,11 +29,12 @@ jobs:
         id: output
         run: |
           echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Cache key: snapshot_version-${{ steps.current_version.outputs.SNAPSHOT_VERSION }}" >> "$GITHUB_STEP_SUMMARY"
           echo "CACHED=${{ steps.cache.outputs.cache-hit }}" >> "$GITHUB_STEP_SUMMARY"
           echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_ENV"
     outputs:
       CACHED: ${{ steps.cache.outputs.cache-hit }}
-      SNAPSHOT_VERSION: ${{ steps.current_version.outputs.SNAPSHOT_VERSION }}
+      SNAPSHOT_VERSION: ${{ env.SNAPSHOT_VERSION }}
 
   build:
     needs: getsnapshot
@@ -42,6 +43,11 @@ jobs:
     env:
       SNAPSHOT_VERSION: ${{ needs.getsnapshot.outputs.SNAPSHOT_VERSION }}
     steps:
+      - name: set output
+        id: output
+        run: |
+          echo "SNAPSHOT_VERSION at build=${{ env.SNAPSHOT_VERSION }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "CACHED at build=${{ needs.getsnapshot.outputs.CACHED }}" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v3
       - name: Login to Docker Hub
         uses: docker/login-action@v2
