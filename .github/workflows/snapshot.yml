@@ -1,4 +1,4 @@
-name: Process Snapthos
+name: Process Snapshots
 
 on:
   push:
