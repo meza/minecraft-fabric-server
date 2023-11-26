@@ -82,16 +82,6 @@ RUN export MC_VERSION=$(cat "/minecraft/installed-version.txt") && \
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-FROM base as mmm
-
-ADD "https://api.github.com/repos/meza/minecraft-mod-manager/releases/latest" /tmp/mmm.latest.json
-
-RUN mkdir -p /minecraft/server && \
-    cat /tmp/mmm.latest.json | \
-    jq -r '.assets[] | select(.label | contains("Linux")) | .browser_download_url' | \
-    xargs wget -O /tmp/mmm.zip && \
-    unzip /tmp/mmm.zip -d /minecraft/server
-
 FROM base as mcrcon
 WORKDIR /
 
@@ -139,7 +129,6 @@ COPY --from=fabric /minecraft/fabric-launcher-version.txt /minecraft/fabric-laun
 COPY --from=fabric /minecraft/tools/install-fabric.sh /minecraft/tools/install-fabric.sh
 COPY --from=fabric /minecraft/loader-metadata.xml /minecraft/loader-metadata.xml
 COPY --from=fabric /minecraft/installer-metadata.xml /minecraft/installer-metadata.xml
-COPY --from=mmm /minecraft/server/mmm /minecraft/server/mmm
 COPY --from=mcrcon /mcrcon/mcrcon /minecraft/tools/mcrcon
 COPY --from=mcrcon /minecraft/tools/minecraft.sh /minecraft/tools/minecraft.sh
 
@@ -198,7 +187,10 @@ STOPSIGNAL SIGUSR1
 WORKDIR /minecraft/server
 
 COPY --link scripts/healthcheck.sh /healthcheck.sh
+COPY --link scripts/mmmInstall.sh /mmmInstall.sh
+
 RUN chmod +x /healthcheck.sh
+RUN chmod +x /mmmInstall.sh
 
 HEALTHCHECK --start-period=5m --interval=1m --retries=30 --timeout=2s \
   CMD /healthcheck.sh

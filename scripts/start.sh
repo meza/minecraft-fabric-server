@@ -15,4 +15,8 @@ chown -R "$USER":"$USER" "$MCDIR"
 
 crond
 
+echo "Installing MMM"
+/mmmInstall.sh
+echo "Installing MMM - done"
+
 exec su "$USER" "/minecraft/scripts/setup.sh" -- "$@"
