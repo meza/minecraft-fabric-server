@@ -1,0 +1,62 @@
+name: Process Snapthos
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '*/30 * * * *'
+
+env:
+  IMAGE_NAME: minecraft-fabric-server
+
+jobs:
+  getmatrix:
+    runs-on: ubuntu-latest
+    outputs:
+        matrix: ${{ steps.getmatrix.outputs.matrix }}
+    steps:
+      - id: getmatrix
+        run: echo "::set-output name=matrix::$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -c --arg d "$(date --date='TZ="UTC" 09:00 last year' +%Y-%m-%dT%H:%M:%S%:z)" '[.versions[] | select(.type=="release") | select(.releaseTime > $d)]')"
+  build:
+    needs: getmatrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.getmatrix.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v3
+      - name: get cache
+        id: cache
+        uses: actions/cache/restore@v3
+        with:
+          path: /tmp/snapshot_version.txt
+          key: mc-version-${{ matrix.id }}
+      - name: Login to Docker Hub
+        if: cache.outputs.cache-hit != 'true'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push for normal versions
+        if: cache.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          no-cache: true
+          build-args: |
+            MINECRAFT_VERSION=${{ matrix.id }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.id }}-latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.id }}
+      - name: setting version file
+        if: cache.outputs.cache-hit != 'true'
+        run: |
+          echo "${{ matrix.id }}" > /tmp/snapshot_version.txt
+      - name: set cache
+        if: cache.outputs.cache-hit != 'true'
+        id: cache-set
+        uses: actions/cache/save@v3
+        with:
+          path: /tmp/snapshot_version.txt
+          key: snapshot_version-${{ matrix.id }}
