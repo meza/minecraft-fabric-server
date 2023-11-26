@@ -15,19 +15,19 @@ jobs:
   getmatrix:
     runs-on: ubuntu-latest
     outputs:
-        matrix: ${{ steps.getmatrix.outputs.matrix }}
+        matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - id: getmatrix
+      - id: set-matrix
         run: |
           DATA=$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -c --arg d "$(date --date='TZ="UTC" 09:00 last year' +%Y-%m-%dT%H:%M:%S%:z)" '[.versions[] | select(.type=="release") | select(.releaseTime > $d)]')
-          echo matrix="\{\"versions\":${DATA}\}" >> $GITHUB_OUTPUT
-          echo matrix="\{\"versions\":${DATA}\}" >> $GITHUB_STEP_SUMMARY
+          echo matrix="\{\"include\":${DATA}\}" >> $GITHUB_OUTPUT
+          echo matrix="\{\"include\":${DATA}\}" >> $GITHUB_STEP_SUMMARY
 
   build:
     needs: getmatrix
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJson(needs.getmatrix.outputs.matrix).versions }}
+      matrix: ${{ fromJson(needs.getmatrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v3
       - name: get cache
