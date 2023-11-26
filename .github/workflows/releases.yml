@@ -1,6 +1,7 @@
 name: Process Snapthos
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
