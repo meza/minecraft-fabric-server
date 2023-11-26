@@ -20,8 +20,8 @@ jobs:
       - id: set-matrix
         run: |
           DATA=$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -c --arg d "$(date --date='TZ="UTC" 09:00 last year' +%Y-%m-%dT%H:%M:%S%:z)" '[.versions[] | select(.type=="release") | select(.releaseTime > $d)]')
-          echo "matrix=\{\"include\":${DATA}\}" >> $GITHUB_OUTPUT
-          echo "matrix=\{\"include\":${DATA}\}" >> $GITHUB_STEP_SUMMARY
+          echo "matrix={\"include\":${DATA}}" >> $GITHUB_OUTPUT
+          echo "matrix={\"include\":${DATA}}" >> $GITHUB_STEP_SUMMARY
   stuff:
     needs: getmatrix
     runs-on: ubuntu-latest
