@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: show stuff
-        run: echo ${{ needs.getmatrix.outputs.matrix }} >> $GITHUB_STEP_SUMMARY
+        run: echo "stuff=${{ needs.getmatrix.outputs.matrix }}" >> $GITHUB_STEP_SUMMARY
   build:
     needs: getmatrix
     runs-on: ubuntu-latest
