@@ -18,8 +18,9 @@ jobs:
         matrix: ${{ steps.getmatrix.outputs.matrix }}
     steps:
       - id: getmatrix
-        run: echo "matrix=$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -c --arg d "$(date --date='TZ="UTC" 09:00 last year' +%Y-%m-%dT%H:%M:%S%:z)" '[.versions[] | select(.type=="release") | select(.releaseTime > $d)]')" >> $GITHUB_OUTPUT
-        run: echo "matrix=$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -c --arg d "$(date --date='TZ="UTC" 09:00 last year' +%Y-%m-%dT%H:%M:%S%:z)" '[.versions[] | select(.type=="release") | select(.releaseTime > $d)]')" >> $GITHUB_SUMMARY
+        run: |
+          echo "matrix=$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -c --arg d "$(date --date='TZ="UTC" 09:00 last year' +%Y-%m-%dT%H:%M:%S%:z)" '[.versions[] | select(.type=="release") | select(.releaseTime > $d)]')" >> $GITHUB_OUTPUT
+          echo "matrix=$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -c --arg d "$(date --date='TZ="UTC" 09:00 last year' +%Y-%m-%dT%H:%M:%S%:z)" '[.versions[] | select(.type=="release") | select(.releaseTime > $d)]')" >> $GITHUB_SUMMARY
   build:
     needs: getmatrix
     runs-on: ubuntu-latest
