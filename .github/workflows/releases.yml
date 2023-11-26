@@ -63,4 +63,4 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: /tmp/snapshot_version.txt
-          key: snapshot_version-${{ matrix.id }}
+          key: mc-version-${{ matrix.id }}
