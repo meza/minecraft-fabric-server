@@ -20,8 +20,8 @@ jobs:
       - id: getmatrix
         run: |
           DATA=$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -c --arg d "$(date --date='TZ="UTC" 09:00 last year' +%Y-%m-%dT%H:%M:%S%:z)" '[.versions[] | select(.type=="release") | select(.releaseTime > $d)]')
-          echo matrix="{\"versions\":$DATA}" >> $GITHUB_OUTPUT
-          echo matrix=$DATA >> $GITHUB_STEP_SUMMARY
+          echo matrix="\{\"versions\":${DATA}\}" >> $GITHUB_OUTPUT
+          echo matrix="\{\"versions\":${DATA}\}" >> $GITHUB_STEP_SUMMARY
 
   build:
     needs: getmatrix
