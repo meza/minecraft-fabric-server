@@ -15,7 +15,7 @@ jobs:
   getmatrix:
     runs-on: ubuntu-latest
     outputs:
-        matrix: ${{ fromJson(steps.getmatrix.outputs.matrix) }}
+        matrix: ${{ steps.getmatrix.outputs.matrix }}
     steps:
       - id: getmatrix
         run: |
