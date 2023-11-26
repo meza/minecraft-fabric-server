@@ -15,7 +15,7 @@ jobs:
   getmatrix:
     runs-on: ubuntu-latest
     outputs:
-        matrix: ${{ steps.getmatrix.outputs.matrix }}
+        matrix: ${{ toJson(steps.getmatrix.outputs.matrix) }}
     steps:
       - id: getmatrix
         run: |
@@ -26,7 +26,7 @@ jobs:
     needs: getmatrix
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ needs.getmatrix.outputs.matrix }}
+      matrix: ${{ fromJson(needs.getmatrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v3
       - name: get cache
