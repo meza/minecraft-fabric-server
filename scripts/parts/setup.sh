@@ -119,6 +119,9 @@ for HC_FILE in "$SETUP_FILES"/server/*; do
     cp --remove-destination "$HC_FILE" "$SERVER/$HC_BASE"
     continue
   else
+    if [ -f "$SERVER/$HC_BASE" ]; then
+      rm -rf "$SERVER/$HC_BASE"
+    fi
     ln -sfr "$HC_FILE" "$SERVER/$HC_BASE"
   fi
 
