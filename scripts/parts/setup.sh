@@ -203,17 +203,20 @@ fi
 
 stop_mc_now() {
   if ! numPlayers; then # if there are players, warn them
-    tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Shutdown in 1 minute.","color":"yellow"}]'
+    tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Shutdown procedure begins in 1 minute.","color":"yellow"}]'
     echo "Stopping mc"
     sleep 60
   fi
   tell_minecraft "save-all"
   tell_minecraft "save-off"
+  tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Creating backup...","color":"yellow"}]'
   echo "Running backup"
   backup
   echo "Backup done"
+  tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Backup done!","color":"yellow"}]'
   tell_minecraft "save-on"
   sleep 1
+  tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Stopping...","color":"yellow"}]'
   tell_minecraft "stop"
 }
 
