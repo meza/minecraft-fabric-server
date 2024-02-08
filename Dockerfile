@@ -7,8 +7,11 @@ RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/reposito
     apk add --update mc bash perl curl wget rsync shadow coreutils gcompat libstdc++ jq screen sed busybox-suid
 
 ENV PYTHONUNBUFFERED=1
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python && \
+    python3 -m venv $VIRTUAL_ENV && \
     python3 -m ensurepip && \
     apk add py3-setuptools && \
     pip3 install --no-cache --upgrade pip setuptools
