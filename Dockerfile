@@ -1,16 +1,20 @@
 # syntax=docker/dockerfile-upstream:master-labs@sha256:fef341bd872d9723b4bc968a57939873bb806ce371c4a8c9d5fa0b1977d87ef6
 # @sha256:7949b5f4df3934290c60e5ebab01667a82c9d5c2e064c8d20120e54a56e9d6cb
-FROM eclipse-temurin:21-alpine as base
+FROM eclipse-temurin:22-alpine AS base
 
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories && \
+    echo http://dl-cdn.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
     apk update && \
+    apk upgrade && \
     apk add --update mc bash perl curl wget rsync shadow coreutils gcompat libstdc++ jq screen sed busybox-suid
 
 ENV PYTHONUNBUFFERED=1
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python && \
+
+RUN apk add --update --no-cache python3~3.11 && \
+    ln -sf python3 /usr/bin/python && \
     python3 -m venv $VIRTUAL_ENV && \
     python3 -m ensurepip && \
     apk add py3-setuptools && \
@@ -22,7 +26,7 @@ RUN addgroup -g 1000 -S minecraft && adduser -D -u 1000 minecraft -G minecraft -
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-FROM base as minecraft
+FROM base AS minecraft
 # Everything that is in preparation for the actual minecraft server
 ARG MINECRAFT_VERSION
 ARG RCON_PASSWORD="minecraft"
@@ -66,7 +70,7 @@ RUN sed -i 's/enable-jmx-monitoring=false/enable-jmx-monitoring=true/g' /minecra
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-FROM base as fabric
+FROM base AS fabric
 
 WORKDIR /
 
@@ -85,7 +89,7 @@ RUN export MC_VERSION=$(cat "/minecraft/installed-version.txt") && \
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-FROM base as mcrcon
+FROM base AS mcrcon
 WORKDIR /
 
 RUN apk add git build-base && mkdir "mcrcon"
@@ -101,7 +105,7 @@ RUN gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o mcrcon mcrcon.c
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-FROM base as backup
+FROM base AS backup
 
 RUN apk add rsync duplicity duply
 RUN pip3 install boto3==1.15.3
@@ -124,7 +128,7 @@ USER root
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-FROM backup as prepare
+FROM backup AS prepare
 
 COPY --from=minecraft /minecraft /minecraft
 COPY --from=fabric /minecraft/server /minecraft/server
@@ -154,7 +158,7 @@ RUN chown -R minecraft:minecraft /minecraft && \
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-FROM prepare as run
+FROM prepare AS run
 
 ARG RCON_PASSWORD="minecraft"
 ARG RCON_PORT=25575
