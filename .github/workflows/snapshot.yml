@@ -14,17 +14,17 @@ jobs:
   getsnapshot:
     runs-on: ubuntu-latest
     steps:
+      - name: set current version
+        id: current_version
+        run: |
+          echo "$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.latest.snapshot')" > /tmp/snapshot_version.txt
+          echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_OUTPUT"
       - name: get cache
         id: cache
         uses: actions/cache/restore@v4
         with:
           path: /tmp/snapshot_version.txt
           key: snapshot_version-${{ steps.current_version.outputs.SNAPSHOT_VERSION }}
-      - name: set current version
-        id: current_version
-        run: |
-          echo "$(curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.latest.snapshot')" > /tmp/snapshot_version.txt
-          echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_OUTPUT"
       - name: set output
         id: output
         run: |
