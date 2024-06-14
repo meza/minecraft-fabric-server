@@ -19,7 +19,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: /tmp/snapshot_version.txt
-          key: snapshot_version-${{ steps.current_version.outputs.SNAPSHOT_VERSION }}-${{ hashFiles('/tmp/snapshot_version.txt') }}
+          key: snapshot_version-${{ steps.current_version.outputs.SNAPSHOT_VERSION }}
       - name: set current version
         id: current_version
         run: |
@@ -75,4 +75,4 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /tmp/snapshot_version.txt
-          key: snapshot_version-${{ env.SNAPSHOT_VERSION }}-${{ hashFiles('/tmp/snapshot_version.txt') }}
+          key: snapshot_version-${{ env.SNAPSHOT_VERSION }}
