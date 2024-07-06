@@ -21,7 +21,7 @@ echo Latest loader version: "$LATEST_LOADER_VERSION"
 LAUNCHER_URL="https://meta.fabricmc.net/v2/versions/loader/${MINECRAFT_VERSION}/${LATEST_LOADER_VERSION}/${LATEST_INSTALLER_VERSION}/server/jar"
 
 if curl --output /dev/null --silent --head --fail "$LAUNCHER_URL"; then
-  echo "There is sa fabric launcher for MC${MINECRAFT_VERSION}";
+  echo "There is a fabric launcher for MC${MINECRAFT_VERSION}";
 else
   echo "There is no fabric launcher for this MC${MINECRAFT_VERSION} yet";
   exit 1;
