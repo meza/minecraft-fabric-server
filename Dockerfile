@@ -107,7 +107,7 @@ RUN gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o mcrcon mcrcon.c
 
 FROM base AS backup
 
-RUN apk add rsync duplicity duply
+RUN apk add rsync duplicity duply gawk
 RUN pip3 install boto3==1.15.3
 
 COPY --link duply/ /home/minecraft/.duply
