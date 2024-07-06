@@ -204,8 +204,10 @@ fi
 stop_mc_now() {
   if ! numPlayers; then # if there are players, warn them
     tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Shutdown procedure begins in 1 minute.","color":"yellow"}]'
-    echo "Stopping mc"
+    echo "Stopping mc now with players online"
     sleep 60
+  else
+    echo "Stopping mc now without players online"
   fi
   tell_minecraft "save-all"
   tell_minecraft "save-off"
@@ -221,9 +223,11 @@ stop_mc_now() {
 }
 
 stop_mc() {
+  echo "Checking for players..."
   if numPlayers; then # if there are no players, stop now
     stop_mc_now
   else
+    echo "**** Players are online, restarting in 5 minutes ****"
     tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Restart in 5 minutes.","color":"yellow"}]'
     sleep 120
     tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Restart in 3 minutes.","color":"yellow"}]'
