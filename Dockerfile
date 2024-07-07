@@ -187,7 +187,7 @@ EXPOSE ${QUERY_PORT}
 VOLUME /minecraft/setup-files
 VOLUME /minecraft/world
 VOLUME /minecraft/backups
-VOLUME /minecraft/server
+#VOLUME /minecraft/server
 
 STOPSIGNAL SIGUSR1
 
