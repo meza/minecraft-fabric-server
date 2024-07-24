@@ -1,9 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "github>stateshifters/renovate-common"
   ],
   "enabledManagers": [
+    "github-actions",
     "dockerfile"
   ],
   "baseBranches": [
