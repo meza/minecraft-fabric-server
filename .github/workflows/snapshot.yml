@@ -59,7 +59,7 @@ jobs:
         run: |
           echo "I see the version as: ${{env.SNAPSHOT_VERSION}}" >> "$GITHUB_STEP_SUMMARY"
       - name: Build and push for normal versions
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
