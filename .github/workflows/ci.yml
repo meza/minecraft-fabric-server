@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: codfish/semantic-release-action@v2
+      - uses: codfish/semantic-release-action@v3
         id: semantic
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -31,7 +31,7 @@ jobs:
         version: [ "1.19.2", "1.19.4", "1.20", "1.20.1", "1.20.2", "23w43a" ]
     steps:
       - uses: actions/checkout@v3
-      - uses: codfish/semantic-release-action@v2
+      - uses: codfish/semantic-release-action@v3
         id: semantic
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
