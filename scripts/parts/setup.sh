@@ -210,13 +210,15 @@ stop_mc_now() {
     echo "Stopping mc now without players online"
   fi
   tell_minecraft "save-all"
-  tell_minecraft "save-off"
-  tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Creating backup...","color":"yellow"}]'
-  echo "Running backup"
-  backup
-  echo "Backup done"
-  tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Backup done!","color":"yellow"}]'
-  tell_minecraft "save-on"
+  if [ "$BACKUP_ON_STOP" = "true" ]; then
+    tell_minecraft "save-off"
+    tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Creating backup...","color":"yellow"}]'
+    echo "Running backup"
+    backup
+    echo "Backup done"
+    tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Backup done!","color":"yellow"}]'
+    tell_minecraft "save-on"
+  fi
   sleep 1
   tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Stopping...","color":"yellow"}]'
   tell_minecraft "stop"
