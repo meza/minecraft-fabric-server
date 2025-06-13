@@ -206,7 +206,7 @@ COPY --link scripts/mmmInstall.sh /mmmInstall.sh
 RUN chmod +x /healthcheck.sh
 RUN chmod +x /mmmInstall.sh
 
-HEALTHCHECK --start-period=5m --interval=1m --retries=30 --timeout=2s \
+HEALTHCHECK --interval=5s --timeout=2s --retries=3 --start-period=5m \
   CMD /healthcheck.sh
 
 CMD ["/minecraft/start.sh"]
