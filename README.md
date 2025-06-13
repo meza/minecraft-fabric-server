@@ -92,6 +92,35 @@ Defaults to 1g (25% of the 4GB heap) which is optimized for Minecraft server per
 
 The maximum number of threads the server can use. This is a Java argument.
 
+### Performance Tuning Parameters
+
+The following environment variables allow you to tune JVM performance based on your server's hardware:
+
+#### G1_HEAP_REGION_SIZE
+
+Controls the size of G1 heap regions. Defaults to `32M` which is optimized for 4GB+ heaps. 
+For smaller heaps (1-2GB), consider `16M` or `8M`.
+
+#### PARALLEL_GC_THREADS
+
+Number of parallel garbage collection threads. Defaults to `8` (optimized for 8-core CPUs).
+Set this to match your CPU core count for optimal performance.
+
+#### CONCURRENT_GC_THREADS
+
+Number of concurrent garbage collection threads. Defaults to `2` (typically 1/4 of parallel threads).
+Recommended: PARALLEL_GC_THREADS / 4.
+
+#### USE_STRING_DEDUPLICATION
+
+Enable string deduplication to reduce memory usage. Defaults to `true`.
+Set to `false` to disable if you experience issues.
+
+#### OPTIMIZE_STRING_CONCAT
+
+Enable optimized string concatenation. Defaults to `true`.
+Set to `false` to disable if you experience compatibility issues.
+
 ### AUTO_UPDATE
 
 If set to `true`, the server will automatically update the mods when booting up.
