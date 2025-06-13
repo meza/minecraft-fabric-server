@@ -71,21 +71,48 @@ validate_config() {
 
 # ------------------------------------------ UTILITY FUNCTIONS ---------------------------------------------------------
 
+# Safely remove files/directories with path validation
+safe_rm() {
+  local target="$1"
+  # Ensure target is not empty and is within expected paths
+  if [[ -n "$target" && "$target" != "/" && "$target" == /minecraft/* ]]; then
+    rm -rf "$target"
+  else
+    echo "ERROR: Refusing to remove potentially dangerous path: $target" >&2
+    return 1
+  fi
+}
+
 hydrate_config() {
   # Copies potential config files from within the container to the setup-files directory
-  TYPE=$1
-  EXCLUDES=$2
+  local TYPE=$1
+  shift # Remove first argument, remaining arguments are the excludes
+  local EXCLUDES=("$@") # Collect all remaining arguments as array
 
   for HC_FILE in "$SERVER"/*."$TYPE"; do
     if [ ! -f "$HC_FILE" ]; then
       continue
     fi
 
+    local HC_BASE
     HC_BASE=$(basename "$HC_FILE")
-    HC_NAME="$SETUP_FILES/server/$HC_BASE"
+    local HC_NAME="$SETUP_FILES/server/$HC_BASE"
 
     echo "Checking ${HC_BASE}"
-    [[ ${EXCLUDES[*]} =~ ${HC_BASE} ]] && echo "excluding $HC_BASE" && continue
+    
+    # Check if HC_BASE is in excludes array
+    local exclude=false
+    for exclude_item in "${EXCLUDES[@]}"; do
+      if [[ "$HC_BASE" == "$exclude_item" ]]; then
+        exclude=true
+        break
+      fi
+    done
+    
+    if [[ "$exclude" == "true" ]]; then
+      echo "excluding $HC_BASE"
+      continue
+    fi
 
     if [ ! -f "$HC_NAME" ]; then
       cp "$HC_FILE" "$HC_NAME"
@@ -100,17 +127,17 @@ echo "**** Resetting the environment ****"
 # Validate configuration early to catch issues
 validate_config
 
-rm -rf $SERVER/screenlog.0
-rm -rf $SERVER/logs
+safe_rm "$SERVER/screenlog.0"
+safe_rm "$SERVER/logs"
 
-mkdir -p $SETUP_FILES/server/
-mkdir -p $SETUP_FILES/scripts/
+mkdir -p "$SETUP_FILES/server/"
+mkdir -p "$SETUP_FILES/scripts/"
 mkdir -p "$SETUP_FILES/logs/$DATE"
-mkdir -p $WORLD/datapacks
+mkdir -p "$WORLD/datapacks"
 
-rm -rf "$SETUP_FILES/logs/latest" && ln -sfr "$SETUP_FILES/logs/$DATE" "$SETUP_FILES/logs/latest"
-rm -rf $SERVER/logs && ln -sf "$SETUP_FILES/logs/$DATE" $SERVER/logs
-rm -rf $SERVER/world && ln -s $WORLD $SERVER/world
+safe_rm "$SETUP_FILES/logs/latest" && ln -sfr "$SETUP_FILES/logs/$DATE" "$SETUP_FILES/logs/latest"
+safe_rm "$SERVER/logs" && ln -sf "$SETUP_FILES/logs/$DATE" "$SERVER/logs"
+safe_rm "$SERVER/world" && ln -s "$WORLD" "$SERVER/world"
 
 # ---------------------------------- Copy config files to the volume ---------------------------------------------------
 
@@ -120,37 +147,15 @@ rsync -q -r --ignore-existing /minecraft/server-init/ /minecraft/server
 
 excludes=(fabric-server-launcher.properties)
 
-# shellcheck disable=SC2086
-# shellcheck disable=SC2128
-hydrate_config "json" $excludes
-
-# shellcheck disable=SC2086
-# shellcheck disable=SC2128
-hydrate_config "properties" $excludes
-
-# shellcheck disable=SC2086
-# shellcheck disable=SC2128
-hydrate_config "lock" $excludes
-
-# shellcheck disable=SC2086
-# shellcheck disable=SC2128
-hydrate_config "png" $excludes
-
-# shellcheck disable=SC2086
-# shellcheck disable=SC2128
-hydrate_config "conf" $excludes
-
-# shellcheck disable=SC2086
-# shellcheck disable=SC2128
-hydrate_config "yml" $excludes
-
-# shellcheck disable=SC2086
-# shellcheck disable=SC2128
-hydrate_config "db" $excludes
-
-# shellcheck disable=SC2086
-# shellcheck disable=SC2128
-hydrate_config "txt" $excludes
+# Process various config file types, excluding specified files
+hydrate_config "json" "${excludes[@]}"
+hydrate_config "properties" "${excludes[@]}"
+hydrate_config "lock" "${excludes[@]}"
+hydrate_config "png" "${excludes[@]}"
+hydrate_config "conf" "${excludes[@]}"
+hydrate_config "yml" "${excludes[@]}"
+hydrate_config "db" "${excludes[@]}"
+hydrate_config "txt" "${excludes[@]}"
 
 
 mkdir -p "$SETUP_FILES/server/config"
@@ -166,7 +171,7 @@ for HC_FILE in "$SETUP_FILES"/server/*; do
   HC_BASE=$(basename "$HC_FILE")
   # if target file exists, remove it
   if [ -f "$SERVER/$HC_BASE" ]; then
-    rm -rf "${SERVER:?}/$HC_BASE"
+    safe_rm "$SERVER/$HC_BASE"
   fi
 
   # if HC_BASE is server.properties, then we need to copy it to the server directory
@@ -176,18 +181,18 @@ for HC_FILE in "$SETUP_FILES"/server/*; do
     continue
   else
     if [ -f "$SERVER/$HC_BASE" ]; then
-      rm -rf "${SERVER:?}/$HC_BASE"
+      safe_rm "$SERVER/$HC_BASE"
     fi
     ln -sfr "$HC_FILE" "$SERVER/$HC_BASE"
   fi
 
 done
 
-if [ -d $SETUP_FILES/datapacks ]; then
-  if [ -d $WORLD/datapacks ]; then
+if [ -d "$SETUP_FILES/datapacks" ]; then
+  if [ -d "$WORLD/datapacks" ]; then
     echo "**** Removing existing datapacks ****"
     echo "**** Please put all datapacks in your setup-files/datapacks folder ****"
-    rm -rf $WORLD/datapacks
+    safe_rm "$WORLD/datapacks"
   fi
 
   rsync -q -r --ignore-existing "$SETUP_FILES/datapacks" "$WORLD"
@@ -223,31 +228,31 @@ if [ "$AUTO_UPDATE_FABRIC" = true ]; then
 fi
 
 
-if [ -f $SERVER/modlist.json ]; then
+if [ -f "$SERVER/modlist.json" ]; then
 
-  mkdir -p $SERVER/mods
+  mkdir -p "$SERVER/mods"
 
   echo "**** modlist.json found, replacing the loader and game version ****"
 
   # update the loader property in the modlist.json to fabric
-  jq '.loader = "fabric"' $SERVER/modlist.json > $SERVER/modlist.json.tmp && mv $SERVER/modlist.json.tmp $SETUP_FILES/server/modlist.json
+  jq '.loader = "fabric"' "$SERVER/modlist.json" > "$SERVER/modlist.json.tmp" && mv "$SERVER/modlist.json.tmp" "$SETUP_FILES/server/modlist.json"
 
   # update the gameVersion property in the modlist.json to the current version
-  jq '.gameVersion = "'"$MC_VERSION"'"' $SERVER/modlist.json > $SERVER/modlist.json.tmp && mv $SERVER/modlist.json.tmp $SETUP_FILES/server/modlist.json
+  jq '.gameVersion = "'"$MC_VERSION"'"' "$SERVER/modlist.json" > "$SERVER/modlist.json.tmp" && mv "$SERVER/modlist.json.tmp" "$SETUP_FILES/server/modlist.json"
 
   echo "**** Installing mods ****"
   (
-    cd $SERVER || exit 1
+    cd "$SERVER" || exit 1
     ./mmm install
   )
   if [ "$AUTO_UPDATE_MODS" = "true" ]; then
     echo "**** Auto Updating ****"
     (
-      cd $SERVER || exit 1
+      cd "$SERVER" || exit 1
       ./mmm update
     )
   fi
-  if [ ! -f $SETUP_FILES/server/modlist-lock.json ]; then
+  if [ ! -f "$SETUP_FILES/server/modlist-lock.json" ]; then
     mv "$SERVER/modlist-lock.json" "$SETUP_FILES/server/modlist-lock.json"
     ln -sfr "$SETUP_FILES/server/modlist-lock.json" "$SERVER/modlist-lock.json"
   fi
@@ -257,6 +262,8 @@ fi
 
 # ----------------------------------------------------------------------------------------------------------------------
 
+# Signal handlers for graceful shutdown
+# shellcheck disable=SC2317 # Function is used as signal handler
 stop_mc_now() {
   if ! numPlayers; then # if there are players, warn them
     tell_minecraft '/tellraw @a ["",{"text":"[SERVER] ","bold":true,"color":"yellow"},{"text":"Shutdown procedure begins in 1 minute.","color":"yellow"}]'
@@ -280,6 +287,7 @@ stop_mc_now() {
   tell_minecraft "stop"
 }
 
+# shellcheck disable=SC2317 # Function is used as signal handler
 stop_mc() {
   echo "Checking for players..."
   if numPlayers; then # if there are no players, stop now
@@ -300,7 +308,7 @@ trap stop_mc SIGUSR1
 trap stop_mc_now SIGTERM
 
 echo "**** Starting Minecraft ****"
-cd $SERVER || exit 1
+cd "$SERVER" || exit 1
 screen -wipe 2>/dev/null
 
 # if BACKUP_ON_STARTUP is true then run
@@ -376,7 +384,7 @@ screen -L -Logfile "$SERVER/screenlog.0" -dmS minecraft "$JAVA_BIN" ${JVM_ARGS} 
 
 MC_PID=$(screen -S minecraft -Q echo "\$PID")
 echo "    Minecraft's pid is ${MC_PID}"
-tail -f $SERVER/screenlog.0 &
+tail -f "$SERVER/screenlog.0" &
 
 echo
 echo "**** Minecraft logs incoming ... ****"

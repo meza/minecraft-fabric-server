@@ -12,7 +12,7 @@ else
     --header "Authorization: Bearer $GITHUB_TOKEN")
   fi
 
-  DOWNLOAD_URL=$(echo $JSON | jq -r '.assets[] | select(.label | contains("Linux")) | .browser_download_url')
+  DOWNLOAD_URL=$(echo "$JSON" | jq -r '.assets[] | select(.label | contains("Linux")) | .browser_download_url')
 fi
 
 wget -O /tmp/mmm.zip "$DOWNLOAD_URL" && \

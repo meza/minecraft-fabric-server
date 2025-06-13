@@ -35,7 +35,7 @@ if [ ! -f "$VERSION_FILE" ]; then
   echo "Installing Fabric ${LATEST_LOADER_VERSION} for Minecraft ${MINECRAFT_VERSION}"
   mkdir -p "$MINECRAFT_DIR" || exit 1
   wget -O installer.jar "https://maven.fabricmc.net/net/fabricmc/fabric-installer/${LATEST_INSTALLER_VERSION}/fabric-installer-${LATEST_INSTALLER_VERSION}.jar" || exit 1
-  java -jar installer.jar server -loader ${LATEST_LOADER_VERSION} -mcversion $MINECRAFT_VERSION || exit 1
+  java -jar installer.jar server -loader "${LATEST_LOADER_VERSION}" -mcversion "$MINECRAFT_VERSION" || exit 1
 
   rm installer.jar
   cp -rf libraries/ "$MINECRAFT_DIR" || exit 1
