@@ -1,9 +1,5 @@
 # GitHub Copilot Instructions
 
-## Project Overview
-
-This is the **Minecraft Mod Manager** project - a TypeScript-based CLI tool for managing Minecraft mods from Modrinth and CurseForge. The project follows strict development practices and quality standards.
-
 ## Core Development Principles
 
 ### Conventional Commit Messages (REQUIRED)
