@@ -94,32 +94,85 @@ The maximum number of threads the server can use. This is a Java argument.
 
 ### Performance Tuning Parameters
 
-The following environment variables allow you to tune JVM performance based on your server's hardware:
+The following environment variables allow fine-tuning of JVM performance based on your server's hardware. 
+These parameters implement Aikar's flags with hardware-specific optimizations:
 
-#### G1_HEAP_REGION_SIZE
+#### Memory Configuration
 
-Controls the size of G1 heap regions. Defaults to `32M` which is optimized for 4GB+ heaps. 
-For smaller heaps (1-2GB), consider `16M` or `8M`.
+##### G1_HEAP_REGION_SIZE
+Controls the size of G1 heap regions. Larger regions reduce management overhead but require more memory.
 
-#### PARALLEL_GC_THREADS
+- **Default**: `32M` (optimized for 4GB+ heaps)
+- **Recommended**: 
+  - `8M` for heaps < 2GB
+  - `16M` for heaps 2-4GB  
+  - `32M` for heaps > 4GB
+- **Example**: `G1_HEAP_REGION_SIZE=16M`
 
-Number of parallel garbage collection threads. Defaults to `8` (optimized for 8-core CPUs).
-Set this to match your CPU core count for optimal performance.
+#### CPU Configuration
 
-#### CONCURRENT_GC_THREADS
+##### PARALLEL_GC_THREADS
+Number of parallel garbage collection threads for stop-the-world collections.
 
-Number of concurrent garbage collection threads. Defaults to `2` (typically 1/4 of parallel threads).
-Recommended: PARALLEL_GC_THREADS / 4.
+- **Default**: `8` (optimized for 8-core CPUs like i7-7700K)
+- **Recommended**: Set to your CPU core count
+- **Range**: 1-16 (higher values may cause overhead)
+- **Example**: `PARALLEL_GC_THREADS=4` for quad-core CPU
 
-#### USE_STRING_DEDUPLICATION
+##### CONCURRENT_GC_THREADS  
+Number of concurrent garbage collection threads that run alongside your application.
 
-Enable string deduplication to reduce memory usage. Defaults to `true`.
-Set to `false` to disable if you experience issues.
+- **Default**: `2` (optimized for 8-core systems)
+- **Recommended**: PARALLEL_GC_THREADS ÷ 4
+- **Range**: 1-8 (should be much smaller than parallel threads)
+- **Example**: `CONCURRENT_GC_THREADS=1` for quad-core CPU
 
-#### OPTIMIZE_STRING_CONCAT
+#### Optimization Features
 
-Enable optimized string concatenation. Defaults to `true`.
-Set to `false` to disable if you experience compatibility issues.
+##### USE_STRING_DEDUPLICATION
+Enables G1's string deduplication feature to reduce memory usage by sharing identical string data.
+
+- **Default**: `true`
+- **Benefits**: Reduces heap usage, especially beneficial for Minecraft's many duplicate strings
+- **Overhead**: Minimal CPU cost for significant memory savings
+- **Example**: `USE_STRING_DEDUPLICATION=false` to disable
+
+##### OPTIMIZE_STRING_CONCAT
+Enables optimized string concatenation for better performance.
+
+- **Default**: `true`  
+- **Benefits**: Faster string operations, reduces temporary object creation
+- **Compatibility**: Generally safe, disable only if compatibility issues arise
+- **Example**: `OPTIMIZE_STRING_CONCAT=false` to disable
+
+#### Configuration Examples
+
+**High-performance 8-core server (32GB RAM):**
+```bash
+XMX=8g
+XMN=2g  
+G1_HEAP_REGION_SIZE=32M
+PARALLEL_GC_THREADS=8
+CONCURRENT_GC_THREADS=2
+```
+
+**Budget 4-core server (16GB RAM):**
+```bash
+XMX=4g
+XMN=1g
+G1_HEAP_REGION_SIZE=16M  
+PARALLEL_GC_THREADS=4
+CONCURRENT_GC_THREADS=1
+```
+
+**Low-resource 2-core server (8GB RAM):**
+```bash
+XMX=2g
+XMN=512m
+G1_HEAP_REGION_SIZE=8M
+PARALLEL_GC_THREADS=2
+CONCURRENT_GC_THREADS=1
+```
 
 ### AUTO_UPDATE
 
@@ -153,3 +206,27 @@ This contains the configuration files for the mods.
 ### /minecraft/backups
 
 Contains the backups of the server.
+
+## Troubleshooting
+
+### Performance Issues
+
+If you're experiencing poor performance, check the following:
+
+1. **Memory Configuration**: Ensure XMN is approximately 25% of XMX
+2. **GC Thread Counts**: Match PARALLEL_GC_THREADS to your CPU core count
+3. **Heap Region Size**: Use larger regions (32M) for heaps > 4GB
+4. **Validation Warnings**: Check server logs for configuration warnings
+
+### Configuration Validation
+
+The server performs automatic validation of JVM parameters on startup:
+- Memory values must end with 'm' or 'g' (e.g., `XMX=4g`)
+- Thread counts must be positive integers
+- Heap region sizes must end with 'm' or 'k' (e.g., `G1_HEAP_REGION_SIZE=32m`)
+
+### Common Issues
+
+- **High GC overhead**: Reduce PARALLEL_GC_THREADS if > CPU cores
+- **Memory errors**: Ensure XMN < XMX and both are appropriate for available RAM
+- **Startup failures**: Check that all environment variables have valid formats
