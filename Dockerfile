@@ -64,7 +64,7 @@ RUN sed -i 's/enable-jmx-monitoring=false/enable-jmx-monitoring=true/g' /minecra
     sed -i "s/rcon.port=25575/rcon.port=$RCON_PORT/" /minecraft/server/server.properties && \
     sed -i "s/rcon.password=/rcon.password=$RCON_PASSWORD/g" /minecraft/server/server.properties && \
     sed -i "s/query.port=25565/query.port=$QUERY_PORT/g" /minecraft/server/server.properties && \
-    sed -i "s/server.port=25565/server.port=$MINECRAFT_PORT/g" /minecraft/server/server.properties && \
+    sed -i "s/server-port=25565/server-port=$MINECRAFT_PORT/g" /minecraft/server/server.properties && \
     sed -i 's/enable-rcon=false/enable-rcon=true/g' /minecraft/server/server.properties && \
     echo "eula=true" > /minecraft/server/eula.txt
 
