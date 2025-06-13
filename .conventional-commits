@@ -1,9 +1,0 @@
-# Conventional Commits Applied
-
-This file confirms that all commit messages have been updated to follow conventional commit format:
-
-- `fix:` type for performance improvements 
-- `refactor:` type for parameterization changes
-- `chore:` type for code quality and documentation improvements
-
-This ensures proper semantic versioning via semantic-release plugin.
