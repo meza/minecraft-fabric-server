@@ -85,7 +85,8 @@ The maximum amount of memory the server can use. This is a Java argument.
 
 ### XMN
 
-The minimum amount of memory the server can use for the young generation. This is a Java argument.
+The amount of memory allocated to the young generation. This is a Java argument. 
+Defaults to 1g (25% of the 4GB heap) which is optimized for Minecraft server performance.
 
 ### MAX_THREADS
 
