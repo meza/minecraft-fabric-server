@@ -117,15 +117,6 @@ RUN touch /var/log/duply.log && \
     chmod a+rw /var/log/duply* && \
     chown -R minecraft:minecraft /home/minecraft/.duply
 
-USER minecraft
-
-RUN (crontab -l ; echo "15 08 */7 * * /usr/bin/duply minecraft purgeAuto --force --allow-source-mismatch 2> /var/log/duply.err 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
-    (crontab -l ; echo "0 * * * * /usr/bin/duply minecraft backup now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
-    (crontab -l ; echo "30 05 * * * /usr/bin/duply minecraft full now --allow-source-mismatch 2> /var/log/duply.error 1> /var/log/duply.log") | sort - | uniq - | crontab - && \
-    echo "Crontab prepared"
-
-USER root
-
 # ----------------------------------------------------------------------------------------------------------------------
 
 FROM backup AS prepare
@@ -149,6 +140,7 @@ RUN mv -u /minecraft/server /minecraft/server-init && \
     ln -sf /minecraft/tools/minecraft.sh /usr/bin/minecraft
 
 COPY scripts/parts /minecraft/scripts
+COPY scripts/setup-cron.sh /minecraft/scripts/setup-cron.sh
 COPY scripts/start.sh /minecraft/start.sh
 
 RUN chown -R minecraft:minecraft /minecraft && \
