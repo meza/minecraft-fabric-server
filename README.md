@@ -174,6 +174,17 @@ PARALLEL_GC_THREADS=2
 CONCURRENT_GC_THREADS=1
 ```
 
+### Backup Schedule
+
+The image no longer hard codes when backups run. Instead you can control the cron
+schedule with environment variables:
+
+- `CRON_PURGE` &ndash; purge old backups (default `15 08 */7 * *`)
+- `CRON_BACKUP` &ndash; run incremental backups (default `0 * * * *`)
+- `CRON_FULL` &ndash; create a full backup (default `30 05 * * *`)
+
+Set any of these variables to an empty value to disable the corresponding task.
+
 ### AUTO_UPDATE
 
 If set to `true`, the server will automatically update the mods when booting up.

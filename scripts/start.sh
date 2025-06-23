@@ -13,6 +13,7 @@ chown -R "$USER":"$USER" "$MCDIR"
 
 # ------------------------------------------ THINGS TO DO AS ROOT ------------------------------------------------------
 
+/minecraft/scripts/setup-cron.sh
 crond
 
 echo "Installing MMM"
