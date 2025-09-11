@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.getmatrix.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: get cache
         id: cache
         uses: actions/cache/restore@v4
