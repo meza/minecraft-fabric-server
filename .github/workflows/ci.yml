@@ -10,7 +10,7 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: codfish/semantic-release-action@v3
         id: semantic
         with:
@@ -30,7 +30,7 @@ jobs:
       matrix:
         version: [ "1.19.2", "1.19.4", "1.20", "1.20.1", "1.20.2", "23w43a" ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: codfish/semantic-release-action@v3
         id: semantic
         with:
@@ -71,7 +71,7 @@ jobs:
     needs: [ analyze, build ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Update description
         uses: peter-evans/dockerhub-description@v4
         with:
