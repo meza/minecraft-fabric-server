@@ -13,7 +13,7 @@ ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 
-RUN apk add --update --no-cache python3 && \
+RUN apk add --update --no-cache gcompat python3 && \
     ln -sf python3 /usr/bin/python && \
     python3 -m venv $VIRTUAL_ENV && \
     python3 -m ensurepip && \
