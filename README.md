@@ -94,13 +94,27 @@ The maximum number of threads the server can use. This is a Java argument.
 
 ### Performance Tuning Parameters
 
-The following environment variables allow fine-tuning of JVM performance based on your server's hardware. 
-These parameters implement Aikar's flags with hardware-specific optimizations:
+The following environment variables allow fine-tuning of JVM performance based on your server's hardware.
+
+**Important**: Starting with Minecraft 26.1, the garbage collector automatically switches from G1GC to ZGC (Z Garbage Collector). 
+For Minecraft versions 26.1 and above, G1GC-specific parameters (G1_HEAP_REGION_SIZE, PARALLEL_GC_THREADS, CONCURRENT_GC_THREADS) are not used.
+
+#### Garbage Collection
+
+**Minecraft < 26.1**: Uses G1GC (Garbage-First Garbage Collector) with Aikar's flags for optimized performance.
+
+**Minecraft >= 26.1**: Automatically uses ZGC (Generational Z Garbage Collector) which provides:
+- Ultra-low pause times (< 1ms)
+- Better performance for high-memory servers
+- Reduced stuttering during gameplay
+- Requires Java 25+
 
 #### Memory Configuration
 
 ##### G1_HEAP_REGION_SIZE
 Controls the size of G1 heap regions. Larger regions reduce management overhead but require more memory.
+
+**Note**: Only applicable for Minecraft versions < 26.1 (G1GC)
 
 - **Default**: `32M` (optimized for 4GB+ heaps)
 - **Recommended**: 
@@ -114,6 +128,8 @@ Controls the size of G1 heap regions. Larger regions reduce management overhead 
 ##### PARALLEL_GC_THREADS
 Number of parallel garbage collection threads for stop-the-world collections.
 
+**Note**: Only applicable for Minecraft versions < 26.1 (G1GC)
+
 - **Default**: `8` (optimized for 8-core CPUs like i7-7700K)
 - **Recommended**: Set to your CPU core count
 - **Range**: 1-16 (higher values may cause overhead)
@@ -121,6 +137,8 @@ Number of parallel garbage collection threads for stop-the-world collections.
 
 ##### CONCURRENT_GC_THREADS  
 Number of concurrent garbage collection threads that run alongside your application.
+
+**Note**: Only applicable for Minecraft versions < 26.1 (G1GC)
 
 - **Default**: `2` (optimized for 8-core systems)
 - **Recommended**: PARALLEL_GC_THREADS ÷ 4
@@ -130,11 +148,12 @@ Number of concurrent garbage collection threads that run alongside your applicat
 #### Optimization Features
 
 ##### USE_STRING_DEDUPLICATION
-Enables G1's string deduplication feature to reduce memory usage by sharing identical string data.
+Enables string deduplication feature to reduce memory usage by sharing identical string data.
 
 - **Default**: `true`
 - **Benefits**: Reduces heap usage, especially beneficial for Minecraft's many duplicate strings
 - **Overhead**: Minimal CPU cost for significant memory savings
+- **Compatibility**: Works with both G1GC (< 26.1) and ZGC (>= 26.1)
 - **Example**: `USE_STRING_DEDUPLICATION=false` to disable
 
 ##### OPTIMIZE_STRING_CONCAT
@@ -146,6 +165,8 @@ Enables optimized string concatenation for better performance.
 - **Example**: `OPTIMIZE_STRING_CONCAT=false` to disable
 
 #### Configuration Examples
+
+**For Minecraft < 26.1 (G1GC):**
 
 **High-performance 8-core server (32GB RAM):**
 ```bash
@@ -172,6 +193,23 @@ XMN=512m
 G1_HEAP_REGION_SIZE=8M
 PARALLEL_GC_THREADS=2
 CONCURRENT_GC_THREADS=1
+```
+
+**For Minecraft >= 26.1 (ZGC):**
+
+ZGC automatically manages garbage collection with minimal configuration needed. 
+The G1GC-specific parameters are ignored. Simply configure memory:
+
+**Recommended minimum for Minecraft 26.1+:**
+```bash
+XMX=4g
+XMS=4g
+```
+
+**High-performance server:**
+```bash
+XMX=8g
+XMS=8g
 ```
 
 ### Backup Schedule

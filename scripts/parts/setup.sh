@@ -313,6 +313,7 @@ fi
 
 # JVM Arguments Construction - Performance tuning configurable via environment variables
 echo "**** Building JVM arguments for hardware optimization ****"
+echo "**** Minecraft Version: ${MC_VERSION} ****"
 
 # Basic memory settings
 JVM_ARGS="-Xms${XMS} -Xmx${XMX}"
@@ -322,49 +323,72 @@ if [ -n "${XMN}" ]; then
   JVM_ARGS="${JVM_ARGS} -Xmn${XMN}"
 fi
 
-# Core JVM modules and GC selection
+# Core JVM modules
 JVM_ARGS="${JVM_ARGS} --add-modules=jdk.incubator.vector"
-JVM_ARGS="${JVM_ARGS} -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200"
 JVM_ARGS="${JVM_ARGS} -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC"
 
-# GC Threading configuration (parameterized for hardware optimization)
-if [[ "${PARALLEL_GC_THREADS}" =~ ^[0-9]+$ ]] && [ "${PARALLEL_GC_THREADS}" -gt 0 ]; then
-  JVM_ARGS="${JVM_ARGS} -XX:ParallelGCThreads=${PARALLEL_GC_THREADS}"
+# Determine which garbage collector to use based on Minecraft version
+# Minecraft 26.1+ requires ZGC (Generational ZGC with Java 25)
+if version_gte "$MC_VERSION" "26.1"; then
+  echo "**** Using ZGC (Generational) for Minecraft ${MC_VERSION} ****"
+  # ZGC configuration for Minecraft 26.1+
+  JVM_ARGS="${JVM_ARGS} -XX:+UseZGC -XX:+ZGenerational"
+  
+  # ZGC-specific tuning
+  JVM_ARGS="${JVM_ARGS} -XX:+AlwaysPreTouch"
+  
+  # String optimizations (ZGC compatible)
+  if [ "${USE_STRING_DEDUPLICATION}" = "true" ]; then
+    JVM_ARGS="${JVM_ARGS} -XX:+UseStringDeduplication"
+  fi
+  
+  if [ "${OPTIMIZE_STRING_CONCAT}" = "true" ]; then
+    JVM_ARGS="${JVM_ARGS} -XX:+OptimizeStringConcat"
+  fi
 else
-  echo "WARNING: PARALLEL_GC_THREADS must be a positive integer, using default"
+  echo "**** Using G1GC for Minecraft ${MC_VERSION} ****"
+  # G1GC configuration for Minecraft < 26.1 (Aikar's flags)
+  JVM_ARGS="${JVM_ARGS} -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200"
+  
+  # GC Threading configuration (parameterized for hardware optimization)
+  if [[ "${PARALLEL_GC_THREADS}" =~ ^[0-9]+$ ]] && [ "${PARALLEL_GC_THREADS}" -gt 0 ]; then
+    JVM_ARGS="${JVM_ARGS} -XX:ParallelGCThreads=${PARALLEL_GC_THREADS}"
+  else
+    echo "WARNING: PARALLEL_GC_THREADS must be a positive integer, using default"
+  fi
+  
+  if [[ "${CONCURRENT_GC_THREADS}" =~ ^[0-9]+$ ]] && [ "${CONCURRENT_GC_THREADS}" -gt 0 ]; then
+    JVM_ARGS="${JVM_ARGS} -XX:ConcGCThreads=${CONCURRENT_GC_THREADS}"
+  else
+    echo "WARNING: CONCURRENT_GC_THREADS must be a positive integer, using default"
+  fi
+  
+  # Core G1GC tuning (Aikar's flags)
+  JVM_ARGS="${JVM_ARGS} -XX:+AlwaysPreTouch -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4"
+  JVM_ARGS="${JVM_ARGS} -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90"
+  JVM_ARGS="${JVM_ARGS} -XX:MaxMetaspaceSize=1G -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32"
+  JVM_ARGS="${JVM_ARGS} -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1"
+  
+  # G1 heap region optimization
+  if [ -n "${G1_HEAP_REGION_SIZE}" ]; then
+    JVM_ARGS="${JVM_ARGS} -XX:G1HeapRegionSize=${G1_HEAP_REGION_SIZE}"
+  fi
+  
+  # G1 generation sizing
+  JVM_ARGS="${JVM_ARGS} -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1ReservePercent=2"
+  
+  # String optimizations (parameterized)
+  if [ "${USE_STRING_DEDUPLICATION}" = "true" ]; then
+    JVM_ARGS="${JVM_ARGS} -XX:+UseStringDeduplication"
+  fi
+  
+  if [ "${OPTIMIZE_STRING_CONCAT}" = "true" ]; then
+    JVM_ARGS="${JVM_ARGS} -XX:+OptimizeStringConcat"
+  fi
+  
+  # Aikar's flags identification
+  JVM_ARGS="${JVM_ARGS} -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true"
 fi
-
-if [[ "${CONCURRENT_GC_THREADS}" =~ ^[0-9]+$ ]] && [ "${CONCURRENT_GC_THREADS}" -gt 0 ]; then
-  JVM_ARGS="${JVM_ARGS} -XX:ConcGCThreads=${CONCURRENT_GC_THREADS}"
-else
-  echo "WARNING: CONCURRENT_GC_THREADS must be a positive integer, using default"
-fi
-
-# Core G1GC tuning (Aikar's flags)
-JVM_ARGS="${JVM_ARGS} -XX:+AlwaysPreTouch -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4"
-JVM_ARGS="${JVM_ARGS} -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90"
-JVM_ARGS="${JVM_ARGS} -XX:MaxMetaspaceSize=1G -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32"
-JVM_ARGS="${JVM_ARGS} -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1"
-
-# G1 heap region optimization
-if [ -n "${G1_HEAP_REGION_SIZE}" ]; then
-  JVM_ARGS="${JVM_ARGS} -XX:G1HeapRegionSize=${G1_HEAP_REGION_SIZE}"
-fi
-
-# G1 generation sizing
-JVM_ARGS="${JVM_ARGS} -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1ReservePercent=2"
-
-# String optimizations (parameterized)
-if [ "${USE_STRING_DEDUPLICATION}" = "true" ]; then
-  JVM_ARGS="${JVM_ARGS} -XX:+UseStringDeduplication"
-fi
-
-if [ "${OPTIMIZE_STRING_CONCAT}" = "true" ]; then
-  JVM_ARGS="${JVM_ARGS} -XX:+OptimizeStringConcat"
-fi
-
-# Aikar's flags identification
-JVM_ARGS="${JVM_ARGS} -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true"
 
 # Start Minecraft server with optimized JVM arguments
 echo "Starting Minecraft with JVM args: ${JVM_ARGS}"
