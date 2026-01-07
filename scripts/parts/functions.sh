@@ -45,6 +45,7 @@ export -f numPlayers
 
 # Version comparison function to handle both old (1.x) and new (26.x) versioning schemes
 # Returns 0 if version1 >= version2, 1 otherwise
+# Note: Requires GNU coreutils (sort -V) and perl (grep -P), both installed in the Dockerfile
 version_gte() {
   local v1=$1
   local v2=$2
