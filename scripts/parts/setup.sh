@@ -328,11 +328,11 @@ JVM_ARGS="${JVM_ARGS} --add-modules=jdk.incubator.vector"
 JVM_ARGS="${JVM_ARGS} -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC"
 
 # Determine which garbage collector to use based on Minecraft version
-# Minecraft 26.1+ requires ZGC (Generational ZGC with Java 25)
+# Minecraft 26.1+ requires ZGC (Generational mode is default in Java 24+)
 if version_gte "$MC_VERSION" "26.1"; then
   echo "**** Using ZGC (Generational) for Minecraft ${MC_VERSION} ****"
-  # ZGC configuration for Minecraft 26.1+
-  JVM_ARGS="${JVM_ARGS} -XX:+UseZGC -XX:+ZGenerational"
+  # ZGC configuration for Minecraft 26.1+ (generational mode is default in Java 24+)
+  JVM_ARGS="${JVM_ARGS} -XX:+UseZGC"
   
   # ZGC-specific tuning
   JVM_ARGS="${JVM_ARGS} -XX:+AlwaysPreTouch"
