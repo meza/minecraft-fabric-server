@@ -13,12 +13,10 @@ ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 
-RUN apk add --update --no-cache gcompat python3 && \
+RUN apk add --update --no-cache python3 py3-pip py3-setuptools && \
     ln -sf python3 /usr/bin/python && \
     python3 -m venv $VIRTUAL_ENV && \
-    python3 -m ensurepip && \
-    apk add py3-setuptools && \
-    pip3 install --no-cache --upgrade pip setuptools
+    $VIRTUAL_ENV/bin/python -m pip install --no-cache-dir --upgrade pip setuptools
 
 RUN addgroup -g 1000 -S minecraft && adduser -D -u 1000 minecraft -G minecraft -s /bin/bash && \
     mkdir -p /minecraft && \
@@ -107,8 +105,10 @@ RUN gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o mcrcon mcrcon.c
 
 FROM base AS backup
 
-RUN apk add rsync duplicity duply gawk
-RUN pip3 install boto3==1.15.3
+RUN apk add rsync duplicity duply gawk && \
+    rm -rf $VIRTUAL_ENV && \
+    python3 -m venv $VIRTUAL_ENV && \
+    $VIRTUAL_ENV/bin/python -m pip install --no-cache-dir boto3==1.15.3
 
 COPY --link duply/ /home/minecraft/.duply
 
