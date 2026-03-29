@@ -6,11 +6,19 @@ MINECRAFT_JAR=$3
 INSTALLER_META_FILE=$4
 LOADER_META_FILE=$5
 
+INSTALLER_META_URL="https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml"
+LOADER_META_URL="https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml"
+
 echo Minecraft version: "$MINECRAFT_VERSION"
 echo Minecraft directory: "$MINECRAFT_DIR"
 echo Minecraft jar: "$MINECRAFT_JAR"
 echo Installer meta file: "$INSTALLER_META_FILE"
 echo Loader meta file: "$LOADER_META_FILE"
+
+if [ "$AUTO_UPDATE_FABRIC" = "true" ]; then
+  curl -fsSL "$INSTALLER_META_URL" -o "$INSTALLER_META_FILE" || exit 1
+  curl -fsSL "$LOADER_META_URL" -o "$LOADER_META_FILE" || exit 1
+fi
 
 LATEST_INSTALLER_VERSION=$(perl -0777 -ne 'print $1 if /<latest>(.*?)<\/latest>/s' "$INSTALLER_META_FILE")
 LATEST_LOADER_VERSION=$(perl -0777 -ne 'print $1 if /<latest>(.*?)<\/latest>/s' "$LOADER_META_FILE")
