@@ -10,8 +10,8 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: codfish/semantic-release-action@v5
+      - uses: actions/checkout@v6.0.2
+      - uses: codfish/semantic-release-action@v5.0.0
         id: semantic
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -30,8 +30,8 @@ jobs:
       matrix:
         version: [ "1.19.2", "1.19.4", "1.20", "1.20.1", "1.20.2", "23w43a" ]
     steps:
-      - uses: actions/checkout@v6
-      - uses: codfish/semantic-release-action@v5
+      - uses: actions/checkout@v6.0.2
+      - uses: codfish/semantic-release-action@v5.0.0
         id: semantic
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -39,12 +39,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to Docker Hub
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.1.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push for normal versions
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v7.1.0
         with:
           context: .
           push: true
@@ -54,7 +54,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}-dev
       - name: Build and push semantic versions
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v7.1.0
         if: needs.analyze.outputs.new-release
         with:
           context: .
@@ -71,9 +71,9 @@ jobs:
     needs: [ analyze, build ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Update description
-        uses: peter-evans/dockerhub-description@v5
+        uses: peter-evans/dockerhub-description@v5.0.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
