@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile-upstream:master-labs@sha256:161c7952e083871aa0bc6bbe8ca838049ffbcfb11a661d4531c83472cbe36093
 # @sha256:7949b5f4df3934290c60e5ebab01667a82c9d5c2e064c8d20120e54a56e9d6cb
-FROM eclipse-temurin:25-alpine@sha256:30d9f87d702c2c1c601ed0d31e0c88ea1ea474ee7676cda7b7a59e759181c4dd AS base
+FROM eclipse-temurin:25-alpine@sha256:5ecfde8e5ecde5954ea3721155b345ef56c1d579b940c761318ad4c05959a151 AS base
 
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories && \
     echo http://dl-cdn.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
