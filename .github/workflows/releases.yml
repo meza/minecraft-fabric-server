@@ -43,7 +43,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push for normal versions
         if: steps.cache.outputs.cache-hit != 'true'
-        uses: docker/build-push-action@v7.2.0
+        uses: docker/build-push-action@v7.3.0
         with:
           context: .
           push: true
