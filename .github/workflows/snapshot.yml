@@ -21,7 +21,7 @@ jobs:
           echo "SNAPSHOT_VERSION=$(cat /tmp/snapshot_version.txt)" >> "$GITHUB_OUTPUT"
       - name: get cache
         id: cache
-        uses: actions/cache/restore@v6.1.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /tmp/snapshot_version.txt
           key: snapshot_version-${{ steps.current_version.outputs.SNAPSHOT_VERSION }}
@@ -50,9 +50,9 @@ jobs:
           echo "SNAPSHOT_VERSION at build=${{ env.SNAPSHOT_VERSION }}" >> "$GITHUB_STEP_SUMMARY"
           echo "CACHED at build=${{ needs.getsnapshot.outputs.CACHED }}" >> "$GITHUB_STEP_SUMMARY"
           echo "${{ env.SNAPSHOT_VERSION }}" > /tmp/snapshot_version.txt
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Login to Docker Hub
-        uses: docker/login-action@v4.4.0
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -60,7 +60,7 @@ jobs:
         run: |
           echo "I see the version as: ${{env.SNAPSHOT_VERSION}}" >> "$GITHUB_STEP_SUMMARY"
       - name: Build and push for normal versions
-        uses: docker/build-push-action@v7.3.0
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
           push: true
@@ -73,7 +73,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.SNAPSHOT_VERSION }}
       - name: set cache
         id: cache-set
-        uses: actions/cache/save@v6.1.0
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /tmp/snapshot_version.txt
           key: ${{ needs.getsnapshot.outputs.CACHE_KEY }}
