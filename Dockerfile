@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile-upstream:master-labs@sha256:a71da922477cfb747003deb15b45989e47ebf8caf3f369311e74c5813960e9a4
+# syntax=docker/dockerfile-upstream:master-labs@sha256:a58a48e76b97e8e758f66049c411e4f824d5c7b905844434d44c457e37dca208
 # @sha256:7949b5f4df3934290c60e5ebab01667a82c9d5c2e064c8d20120e54a56e9d6cb
 FROM eclipse-temurin:25-alpine@sha256:5ecfde8e5ecde5954ea3721155b345ef56c1d579b940c761318ad4c05959a151 AS base
 
